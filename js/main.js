@@ -739,68 +739,94 @@ function buildResumePDF() {
   const ensure = (needed) => { if (y + needed > PAGE_H - M) { doc.addPage(); y = M; } };
   const rule = () => { doc.setDrawColor(210, 205, 196); doc.setLineWidth(0.6); doc.line(M, y, RIGHT, y); };
 
-  // ---- header ----
-  const email = (document.querySelector('a[href^="mailto:"]')?.getAttribute("href") || "").replace("mailto:", "") || "boyet@creativedevlabs.dev";
-  doc.setTextColor(...INK);
-  doc.setFont("times", "bold"); doc.setFontSize(30);
-  doc.text("Boyet", M, y + 6);
-  doc.setFont("helvetica", "normal"); doc.setFontSize(11); doc.setTextColor(...MUTED);
-  doc.text("Creative Developer — Front-end · WebGL · Motion", M, y + 26);
-  doc.text(`${email}   ·   Philippines (GMT+8)`, M, y + 42);
-  y += 60; rule(); y += 26;
+  const q = (sel, root = document) => root.querySelector(sel);
+  const qa = (sel, root = document) => [...root.querySelectorAll(sel)];
 
-  // ---- a titled block of bullet items ----
-  const block = (title, items) => {
-    if (!items.length) return;
-    ensure(28 + items.length * 16);
+  // ---- header (name, role, contact) ----
+  const name = q(".resume__name")?.textContent.trim() || "Boyet A. Dedal";
+  const role = q(".resume__role")?.textContent.trim() || "Full-Stack Developer";
+  const contacts = qa(".resume__contact li").map((li) => li.textContent.trim());
+
+  doc.setTextColor(...INK);
+  doc.setFont("times", "bold"); doc.setFontSize(26);
+  doc.text(name, M, y + 4);
+  doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(...MUTED);
+  doc.text(role.toUpperCase(), M, y + 22, { charSpace: 1.5 });
+  contacts.forEach((c, i) => doc.text(c, RIGHT, y + 4 + i * 13, { align: "right" }));
+  y += Math.max(30, 4 + contacts.length * 13); rule(); y += 22;
+
+  // ---- shared renderers ----
+  const heading = (title) => {
+    ensure(28);
     doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(...MUTED);
     doc.text(title.toUpperCase(), M, y, { charSpace: 1.2 });
+    y += 6;
+    doc.setDrawColor(220, 215, 206); doc.setLineWidth(0.5); doc.line(M, y, RIGHT, y);
     y += 16;
-    doc.setFont("helvetica", "normal"); doc.setFontSize(11); doc.setTextColor(...INK);
-    items.forEach((it) => {
-      ensure(16);
-      doc.text("•", M, y);
-      doc.text(doc.splitTextToSize(it, RIGHT - M - 14), M + 14, y);
-      y += 16;
-    });
-    y += 14;
+  };
+  const paragraph = (txt) => {
+    const lines = doc.splitTextToSize(txt, RIGHT - M);
+    ensure(lines.length * 14);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(10.5); doc.setTextColor(...INK);
+    doc.text(lines, M, y); y += lines.length * 14 + 8;
+  };
+  const bullet = (txt) => {
+    const lines = doc.splitTextToSize(txt, RIGHT - M - 14);
+    ensure(lines.length * 14);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(10.5); doc.setTextColor(...INK);
+    doc.text("•", M, y);
+    doc.text(lines, M + 14, y); y += lines.length * 14 + 3;
   };
 
-  // pull the three résumé columns straight from the DOM (stays in sync)
-  document.querySelectorAll(".resume__col").forEach((col) => {
-    const title = col.querySelector("h4")?.textContent.trim() || "";
-    const items = [...col.querySelectorAll("li")].map((li) => li.textContent.trim());
-    block(title, items);
-  });
+  // ---- iterate résumé sections (stays in sync with the page) ----
+  qa(".resume__doc .resume__section").forEach((sec) => {
+    heading(q(".resume__label", sec)?.textContent.trim() || "");
 
-  // ---- experience ----
-  const exps = [...document.querySelectorAll(".exp__item")];
-  if (exps.length) {
-    ensure(30);
-    doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(...MUTED);
-    doc.text("EXPERIENCE", M, y, { charSpace: 1.2 });
-    y += 20;
-    exps.forEach((item) => {
-      const year = item.querySelector(".exp__year")?.textContent.trim() || "";
-      const role = item.querySelector(".exp__body h3")?.textContent.trim() || "";
-      const company = item.querySelector(".exp__body > p")?.textContent.trim() || "";
-      const desc = item.querySelector(".exp__desc")?.textContent.trim() || "";
-      const descLines = doc.splitTextToSize(desc, RIGHT - M);
-      ensure(20 + 16 + descLines.length * 14 + 12);
+    const text = q(".resume__text", sec);
+    if (text) paragraph(text.textContent.trim());
 
-      doc.setFont("times", "bold"); doc.setFontSize(13); doc.setTextColor(...INK);
-      doc.text(role, M, y);
-      doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(...MUTED);
-      doc.text(year, RIGHT, y, { align: "right" });
-      y += 15;
-      doc.setFontSize(10);
-      doc.text(company, M, y);
-      y += 15;
-      doc.setFontSize(10.5); doc.setTextColor(...INK);
-      doc.text(descLines, M, y);
-      y += descLines.length * 14 + 16;
+    qa(".resume__skills li", sec).forEach((li) => {
+      const cat = q(".resume__skill-cat", li)?.textContent.trim() || "";
+      const val = q(".resume__skill-val", li)?.textContent.trim() || "";
+      const valLines = doc.splitTextToSize(val, RIGHT - M - 130);
+      ensure(Math.max(14, valLines.length * 14));
+      doc.setFont("helvetica", "bold"); doc.setFontSize(10.5); doc.setTextColor(...INK);
+      doc.text(cat, M, y);
+      doc.setFont("helvetica", "normal"); doc.setTextColor(...INK);
+      doc.text(valLines, M + 130, y);
+      y += Math.max(14, valLines.length * 14) + 3;
     });
-  }
+
+    qa(".resume__plist li", sec).forEach((li) => {
+      const pn = q(".resume__pname", li)?.textContent.trim() || "";
+      const pd = q(".resume__pdesc", li)?.textContent.trim() || "";
+      bullet(pd ? `${pn} — ${pd}` : pn);
+    });
+
+    qa(".resume__entry", sec).forEach((en) => {
+      const t = q(".resume__entry-title", en)?.textContent.trim() || "";
+      const d = q(".resume__entry-date", en)?.textContent.trim() || "";
+      const sub = q(".resume__entry-sub", en)?.textContent.trim() || "";
+      const bl = qa(".resume__bullets li", en).map((li) => li.textContent.trim());
+      const tLines = doc.splitTextToSize(t, RIGHT - M - 110);
+      ensure(tLines.length * 14 + 16 + bl.length * 14 + 10);
+      doc.setFont("times", "bold"); doc.setFontSize(12); doc.setTextColor(...INK);
+      doc.text(tLines, M, y);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(...MUTED);
+      doc.text(d, RIGHT, y, { align: "right" });
+      y += tLines.length * 14;
+      if (sub) { doc.setFontSize(10); doc.setTextColor(...MUTED); doc.text(sub, M, y); y += 14; }
+      bl.forEach(bullet);
+      y += 8;
+    });
+
+    // loose bullets (e.g. Certifications) — only those not inside an entry
+    if (!q(".resume__entry", sec)) {
+      qa(".resume__bullets li", sec).forEach((li) => bullet(li.textContent.trim()));
+    }
+
+    y += 6;
+  });
 
   doc.save("Boyet-Resume.pdf");
 }
