@@ -427,7 +427,9 @@ const tick = setInterval(() => {
 function finish() {
   setTimeout(() => {
     loader.classList.add("is-done");
-    document.querySelector(".hero").classList.add("is-in");
+    const fromHash = location.hash.slice(1);
+    const initial = document.getElementById(fromHash)?.classList.contains("page") ? fromHash : "home";
+    showPage(initial, { silent: true });
     randomSplats(6);
   }, 350);
 }
@@ -463,18 +465,35 @@ updateClock();
 setInterval(updateClock, 1000);
 
 /* =========================================================
-   5. Scroll reveal
+   5. Page navigation + per-page reveal animations
    ========================================================= */
-const io = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add("is-in");
-      io.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.18 });
-document.querySelectorAll("section, .section-head, .studio__grid, .work__item")
-  .forEach((el) => io.observe(el));
+function showPage(id, opts = {}) {
+  const target = document.getElementById(id);
+  if (!target || !target.classList.contains("page")) return false;
+  const current = document.querySelector(".page.is-active");
+  if (current === target) { target.scrollTop = 0; return true; }
+
+  if (current) current.classList.remove("is-active", "is-in");
+
+  target.classList.add("is-active");
+  target.scrollTop = 0;
+  // reset + re-trigger child reveal animations every time the page opens
+  target.classList.remove("is-in");
+  void target.offsetWidth; // force reflow
+  requestAnimationFrame(() => requestAnimationFrame(() => target.classList.add("is-in")));
+
+  if (!opts.silent && location.hash !== "#" + id) {
+    history.replaceState(null, "", "#" + id);
+  }
+  // a soft whoosh on page change (reuses the menu sound)
+  if (!opts.silent && typeof playSwoosh === "function") playSwoosh(true);
+  return true;
+}
+
+window.addEventListener("hashchange", () => {
+  const id = location.hash.slice(1);
+  if (id) showPage(id, { silent: true });
+});
 
 /* =========================================================
    6. Work — floating image preview
@@ -502,12 +521,15 @@ window.addEventListener("pointermove", (e) => { ptx = e.clientX; pty = e.clientY
 })();
 
 /* =========================================================
-   7. Smooth anchor scrolling
+   7. In-page links → switch pages (with transition)
    ========================================================= */
 document.querySelectorAll('a[href^="#"]').forEach((a) => {
   a.addEventListener("click", (e) => {
-    const target = document.querySelector(a.getAttribute("href"));
-    if (target) { e.preventDefault(); target.scrollIntoView({ behavior: "smooth" }); }
+    const id = a.getAttribute("href").slice(1);
+    if (document.getElementById(id)?.classList.contains("page")) {
+      e.preventDefault();
+      showPage(id);
+    }
   });
 });
 

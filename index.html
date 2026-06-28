@@ -71,7 +71,7 @@
 
   <main id="top">
     <!-- HOME / HERO -->
-    <section class="hero" id="home">
+    <section class="hero page" id="home">
       <div class="hero__inner">
         <p class="eyebrow reveal">Portfolio — Creative Developer</p>
         <h1 class="hero__title">
@@ -82,23 +82,22 @@
         <div class="hero__meta">
           <p class="reveal">Creative developer based in the Philippines — focused on interactive front-end, WebGL &amp; motion. Currently open to new projects.</p>
           <a href="#about" class="scroll-hint reveal" data-cursor>
-            <span>Scroll to explore</span>
+            <span>Explore</span>
             <svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 1v12M2 8l5 5 5-5" stroke="currentColor" fill="none" stroke-width="1.4"/></svg>
           </a>
         </div>
       </div>
-    </section>
-
-    <!-- MARQUEE -->
-    <section class="marquee" aria-hidden="true">
-      <div class="marquee__track">
-        <span>Front-end</span><i>✦</i><span>WebGL</span><i>✦</i><span>Three.js</span><i>✦</i><span>Creative Coding</span><i>✦</i><span>UI / UX</span><i>✦</i><span>Motion</span><i>✦</i>
-        <span>Front-end</span><i>✦</i><span>WebGL</span><i>✦</i><span>Three.js</span><i>✦</i><span>Creative Coding</span><i>✦</i><span>UI / UX</span><i>✦</i><span>Motion</span><i>✦</i>
-      </div>
+      <!-- MARQUEE (part of Home page) -->
+      <section class="marquee" aria-hidden="true">
+        <div class="marquee__track">
+          <span>Front-end</span><i>✦</i><span>WebGL</span><i>✦</i><span>Three.js</span><i>✦</i><span>Creative Coding</span><i>✦</i><span>UI / UX</span><i>✦</i><span>Motion</span><i>✦</i>
+          <span>Front-end</span><i>✦</i><span>WebGL</span><i>✦</i><span>Three.js</span><i>✦</i><span>Creative Coding</span><i>✦</i><span>UI / UX</span><i>✦</i><span>Motion</span><i>✦</i>
+        </div>
+      </section>
     </section>
 
     <!-- ABOUT -->
-    <section class="studio" id="about">
+    <section class="studio page" id="about">
       <div class="section-head">
         <h2 class="reveal-y">About</h2>
       </div>
@@ -135,7 +134,7 @@
     </section>
 
     <!-- RESUME -->
-    <section class="resume" id="resume">
+    <section class="resume page" id="resume">
       <div class="section-head">
         <h2 class="reveal-y">Resume</h2>
       </div>
@@ -176,7 +175,7 @@
     </section>
 
     <!-- PROJECTS -->
-    <section class="work" id="projects">
+    <section class="work page" id="projects">
       <div class="section-head">
         <h2 class="reveal-y">Projects</h2>
       </div>
@@ -216,7 +215,7 @@
     </section>
 
     <!-- EXPERIENCE -->
-    <section class="experience" id="experience">
+    <section class="experience page" id="experience">
       <div class="section-head">
         <h2 class="reveal-y">Experience</h2>
       </div>
@@ -249,7 +248,7 @@
     </section>
 
     <!-- CONTACT -->
-    <section class="contact" id="contact">
+    <section class="contact page" id="contact">
       <h2 class="contact__title">
         <span class="line"><span class="reveal-y">Let's build</span></span>
         <span class="line"><span class="reveal-y"><em>something</em> good.</span></span>
@@ -261,13 +260,12 @@
         <a href="#" data-cursor>GitHub</a>
         <a href="#" data-cursor>Dribbble</a>
       </div>
+      <footer class="footer">
+        <span>© 2026 Boyet</span>
+        <span>Made with Three.js</span>
+        <a href="#home" data-cursor>Home ↑</a>
+      </footer>
     </section>
-
-    <footer class="footer">
-      <span>© 2026 Boyet</span>
-      <span>Made with Three.js</span>
-      <a href="#home" data-cursor>Back to top ↑</a>
-    </footer>
   </main>
 
   <script type="importmap">

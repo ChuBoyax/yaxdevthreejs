@@ -53,7 +53,24 @@ em { font-style: italic; }
   pointer-events: none;
 }
 
-main { position: relative; z-index: 1; }
+main { position: fixed; inset: 0; z-index: 1; }
+
+/* ---------- Page system (one section shown at a time) ---------- */
+/* section.page keeps higher specificity than .studio/.contact{position:relative} */
+section.page {
+  position: absolute; inset: 0;
+  overflow-y: auto; overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  opacity: 0; visibility: hidden;
+  transform: translateY(36px) scale(.985);
+  transition: opacity .65s var(--ease), transform .8s var(--ease), visibility 0s linear .8s;
+  pointer-events: none;
+  will-change: opacity, transform;
+}
+section.page.is-active {
+  opacity: 1; visibility: visible; transform: none; pointer-events: auto;
+  transition: opacity .8s var(--ease) .06s, transform .9s var(--ease) .06s, visibility 0s;
+}
 
 /* content panels float over the fluid but stay readable */
 .work, .studio, .resume, .experience, .footer {
@@ -361,8 +378,10 @@ section { padding: clamp(4.5rem, 5vw, 5rem) clamp(1.5rem, 4vw, 4rem); scroll-mar
 .section-head h2 { font-family: var(--serif); font-weight: 400; font-size: clamp(2rem, 5vw, 3.5rem); }
 
 /* ---------- Hero ---------- */
-.hero { min-height: 100vh; display: flex; align-items: flex-end; }
-.hero__inner { width: 100%; }
+.hero { display: flex; flex-direction: column; gap: 2.5rem; min-height: 100%; }
+.hero__inner { width: 100%; margin-top: auto; }
+/* marquee pinned to the very bottom of the Home page, full-bleed */
+.hero .marquee { margin: 0 calc(-1 * clamp(1.5rem, 4vw, 4rem)) calc(-1 * clamp(4.5rem, 5vw, 5rem)); }
 .eyebrow { font-size: .8rem; text-transform: uppercase; letter-spacing: .15em; color: var(--muted); margin-bottom: 2rem; }
 .hero__title {
   font-family: var(--serif); font-weight: 400;
@@ -449,7 +468,8 @@ section { padding: clamp(4.5rem, 5vw, 5rem) clamp(1.5rem, 4vw, 4rem); scroll-mar
 @media (max-width: 720px) { .exp__item { grid-template-columns: 1fr; gap: .5rem; } }
 
 /* ---------- Contact ---------- */
-.contact { text-align: center; min-height: 68vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.contact { text-align: center; min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.contact .footer { position: absolute; left: 0; right: 0; bottom: 0; }
 .contact__title { font-family: var(--serif); font-weight: 400; font-size: clamp(2.6rem, 11vw, 10rem); line-height: .95; }
 .contact__title .line { display: block; overflow: hidden; }
 .contact__title em { color: var(--accent); }
@@ -487,7 +507,8 @@ section { padding: clamp(4.5rem, 5vw, 5rem) clamp(1.5rem, 4vw, 4rem); scroll-mar
   .menu-toggle { width: 42px; height: 42px; }
 
   /* hero — pull content to the top (was bottom-aligned) */
-  .hero { min-height: auto; align-items: flex-start; padding-top: clamp(5.5rem, 20vw, 7rem); padding-bottom: 3rem; }
+  .hero { padding-top: clamp(5.5rem, 20vw, 7rem); padding-bottom: 3rem; gap: 1.8rem; }
+  .hero__inner { margin-top: 0; }
   .hero__meta { gap: 1.6rem; margin-top: 2.2rem; }
   .hero__meta p { font-size: .95rem; max-width: 100%; }
 
