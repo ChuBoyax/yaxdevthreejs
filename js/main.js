@@ -457,7 +457,7 @@ document.querySelectorAll("[data-cursor]").forEach((el) => {
 const clockEl = document.getElementById("clock");
 function updateClock() {
   const now = new Date().toLocaleTimeString("en-US", {
-    timeZone: "Asia/Manila", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
+    timeZone: "Asia/Manila", hour: "numeric", minute: "2-digit", hour12: true,
   });
   clockEl.textContent = `MNL ${now}`;
 }
@@ -662,20 +662,22 @@ window.addEventListener("pointerdown", ensureAudio);
 /* =========================================================
    9. Theme toggle (light / dark) + menu "muffle" effect
    ========================================================= */
-const themeBtn = document.getElementById("themeToggle");
+const themeInput = document.getElementById("input"); // Uiverse switch checkbox (checked = dark)
 const BG_LIGHT = [0.927, 0.912, 0.884];
 const BG_DARK = [0.052, 0.052, 0.060];
 function applyTheme(theme) {
   document.documentElement.dataset.theme = theme;
   localStorage.setItem("theme", theme);
-  themeBtn.querySelector(".nav__theme-txt").textContent = theme === "dark" ? "Light" : "Dark";
+  if (themeInput) themeInput.checked = theme === "dark";
   const c = theme === "dark" ? BG_DARK : BG_LIGHT;
   displayMat.uniforms.uBg.value.set(c[0], c[1], c[2]);
 }
 applyTheme(document.documentElement.dataset.theme || "light");
-themeBtn.addEventListener("click", () => {
-  applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
-});
+if (themeInput) {
+  themeInput.addEventListener("change", () => {
+    applyTheme(themeInput.checked ? "dark" : "light");
+  });
+}
 
 /* =========================================================
    10. Full-screen menu — open/close + muffle ("natabunan")

@@ -12,32 +12,45 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <!-- WebGL flowing background -->
   <canvas id="bg"></canvas>
-
-  <!-- Loader -->
   <div class="loader" id="loader">
     <div class="loader__count"><span id="loaderNum">0</span><i>%</i></div>
     <div class="loader__bar"><span id="loaderBar"></span></div>
   </div>
-
-  <!-- Custom cursor -->
   <div class="cursor" id="cursor"></div>
-
-  <!-- Paint hint -->
   <div class="hint" id="hint">
     <span class="hint__dot"></span>
     <span>Move to paint — sound on ✦</span>
   </div>
-
-  <!-- Nav -->
   <header class="nav">
-    <a href="#home" class="nav__brand" data-cursor>Boyet<sup>®</sup></a>
+    <a href="#home" class="nav__brand" data-cursor>Yax Dev<sup></sup></a>
     <div class="nav__right">
-      <button class="nav__theme" id="themeToggle" data-cursor aria-label="Toggle theme">
-        <span class="nav__theme-ico" aria-hidden="true"></span>
-        <span class="nav__theme-txt">Dark</span>
-      </button>
+      <!-- Theme switch (Uiverse by RiccardoRapelli) -->
+      <label class="switch" data-cursor aria-label="Toggle theme">
+        <input id="input" type="checkbox" />
+        <div class="slider round">
+          <div class="sun-moon">
+            <svg id="moon-dot-1" class="moon-dot" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"></circle></svg>
+            <svg id="moon-dot-2" class="moon-dot" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"></circle></svg>
+            <svg id="moon-dot-3" class="moon-dot" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"></circle></svg>
+            <svg id="light-ray-1" class="light-ray" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"></circle></svg>
+            <svg id="light-ray-2" class="light-ray" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"></circle></svg>
+            <svg id="light-ray-3" class="light-ray" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"></circle></svg>
+            <svg id="cloud-1" class="cloud-dark" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"></circle></svg>
+            <svg id="cloud-2" class="cloud-dark" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"></circle></svg>
+            <svg id="cloud-3" class="cloud-dark" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"></circle></svg>
+            <svg id="cloud-4" class="cloud-light" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"></circle></svg>
+            <svg id="cloud-5" class="cloud-light" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"></circle></svg>
+            <svg id="cloud-6" class="cloud-light" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"></circle></svg>
+          </div>
+          <div class="stars">
+            <svg id="star-1" class="star" viewBox="0 0 20 20"><path d="M 0 10 C 10 10,10 10 ,0 10 C 10 10 , 10 10 , 10 20 C 10 10 , 10 10 , 20 10 C 10 10 , 10 10 , 10 0 C 10 10,10 10 ,0 10 Z"></path></svg>
+            <svg id="star-2" class="star" viewBox="0 0 20 20"><path d="M 0 10 C 10 10,10 10 ,0 10 C 10 10 , 10 10 , 10 20 C 10 10 , 10 10 , 20 10 C 10 10 , 10 10 , 10 0 C 10 10,10 10 ,0 10 Z"></path></svg>
+            <svg id="star-3" class="star" viewBox="0 0 20 20"><path d="M 0 10 C 10 10,10 10 ,0 10 C 10 10 , 10 10 , 10 20 C 10 10 , 10 10 , 20 10 C 10 10 , 10 10 , 10 0 C 10 10,10 10 ,0 10 Z"></path></svg>
+            <svg id="star-4" class="star" viewBox="0 0 20 20"><path d="M 0 10 C 10 10,10 10 ,0 10 C 10 10 , 10 10 , 20 10 C 10 10 , 10 10 , 10 0 C 10 10,10 10 ,0 10 Z"></path></svg>
+          </div>
+        </div>
+      </label>
       <button class="nav__sound is-on" id="soundToggle" data-cursor aria-label="Toggle sound">
         <span class="eq"><i></i><i></i><i></i><i></i></span>
         <span class="nav__sound-txt">Sound</span>
@@ -48,8 +61,6 @@
       </button>
     </div>
   </header>
-
-  <!-- Full-screen slide-over menu -->
   <div class="menu" id="menu" aria-hidden="true">
     <nav class="menu__nav">
       <a href="#home" data-cursor><span class="menu__idx"></span>Home</a>
@@ -68,9 +79,7 @@
       </div>
     </div>
   </div>
-
   <main id="top">
-    <!-- HOME / HERO -->
     <section class="hero page" id="home">
       <div class="hero__inner">
         <p class="eyebrow reveal">Portfolio — Creative Developer</p>
@@ -87,7 +96,6 @@
           </a>
         </div>
       </div>
-      <!-- MARQUEE (part of Home page) -->
       <section class="marquee" aria-hidden="true">
         <div class="marquee__track">
           <span>Front-end</span><i>✦</i><span>WebGL</span><i>✦</i><span>Three.js</span><i>✦</i><span>Creative Coding</span><i>✦</i><span>UI / UX</span><i>✦</i><span>Motion</span><i>✦</i>
@@ -95,45 +103,45 @@
         </div>
       </section>
     </section>
-
-    <!-- ABOUT -->
     <section class="studio page" id="about">
       <div class="section-head">
         <h2 class="reveal-y">About</h2>
       </div>
       <div class="studio__grid">
-        <p class="studio__lead reveal-y">
-          I'm a developer who lives at the crossroads of <em>design and code</em> —
-          building sites that feel as good as they look, down to the smallest interaction.
-        </p>
-        <div class="studio__cols">
-          <div class="reveal">
-            <h4>Focus</h4>
-            <ul>
-              <li>Front-end Engineering</li>
-              <li>WebGL / Three.js</li>
-              <li>Interaction &amp; Motion</li>
-              <li>UI / UX Design</li>
-            </ul>
-          </div>
-          <div class="reveal">
-            <!-- tha -->
-            <h4>Approach</h4>
-            <p>Detail-obsessed and performance-minded. I sweat the micro-interactions that make a product feel alive.</p>
-          </div>
-          <div class="reveal">
-            <h4>Currently</h4>
-            <ul>
-              <li>Open to freelance</li>
-              <li>Based in PH (GMT+8)</li>
-              <li>Exploring shaders</li>
-            </ul>
+        <figure class="studio__portrait" aria-hidden="true">
+          <img src="images/upuan.png" alt="" loading="lazy" />
+        </figure>
+        <div class="studio__main">
+          <p class="studio__lead reveal-y">
+            I'm a developer who lives at the crossroads of <em>design and code</em> —
+            building sites that feel as good as they look, down to the smallest interaction.
+          </p>
+          <div class="studio__cols">
+            <div class="reveal">
+              <h4>Focus</h4>
+              <ul>
+                <li>Front-end Engineering</li>
+                <li>WebGL / Three.js</li>
+                <li>Interaction &amp; Motion</li>
+                <li>UI / UX Design</li>
+              </ul>
+            </div>
+            <div class="reveal">
+              <h4>Approach</h4>
+              <p>Detail-obsessed and performance-minded. I sweat the micro-interactions that make a product feel alive.</p>
+            </div>
+            <div class="reveal">
+              <h4>Currently</h4>
+              <ul>
+                <li>Open to freelance</li>
+                <li>Based in PH (GMT+8)</li>
+                <li>Exploring shaders</li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
     </section>
-
-    <!-- RESUME -->
     <section class="resume page" id="resume">
       <div class="section-head">
         <h2 class="reveal-y">Resume</h2>
@@ -173,8 +181,6 @@
         <svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 1v9M3 6l4 4 4-4M2 13h10" stroke="currentColor" fill="none" stroke-width="1.4"/></svg>
       </a>
     </section>
-
-    <!-- PROJECTS -->
     <section class="work page" id="projects">
       <div class="section-head">
         <h2 class="reveal-y">Projects</h2>
@@ -213,8 +219,6 @@
       </ul>
       <div class="work__preview" id="workPreview"><img alt="" /></div>
     </section>
-
-    <!-- EXPERIENCE -->
     <section class="experience page" id="experience">
       <div class="section-head">
         <h2 class="reveal-y">Experience</h2>
@@ -246,8 +250,6 @@
         </li>
       </ul>
     </section>
-
-    <!-- CONTACT -->
     <section class="contact page" id="contact">
       <h2 class="contact__title">
         <span class="line"><span class="reveal-y">Let's build</span></span>
@@ -267,7 +269,6 @@
       </footer>
     </section>
   </main>
-
   <script type="importmap">
   {
     "imports": {
@@ -275,7 +276,7 @@
     }
   }
   </script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="js/vendor/jspdf.umd.min.js"></script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>
