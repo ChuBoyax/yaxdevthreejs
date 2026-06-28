@@ -479,8 +479,8 @@ section { padding: clamp(2.5rem, 5vw, 5rem) clamp(1.5rem, 4vw, 4rem); scroll-mar
   .nav__right { gap: 1.1rem; }
   .menu-toggle { width: 42px; height: 42px; }
 
-  /* hero — breathing room from screen edges */
-  .hero { min-height: 100svh; padding-bottom: 2.5rem; }
+  /* hero — pull content to the top (was bottom-aligned) */
+  .hero { min-height: auto; align-items: flex-start; padding-top: clamp(5.5rem, 20vw, 7rem); padding-bottom: 3rem; }
   .hero__meta { gap: 1.6rem; margin-top: 2.2rem; }
   .hero__meta p { font-size: .95rem; max-width: 100%; }
 
