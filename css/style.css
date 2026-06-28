@@ -89,15 +89,22 @@ main { position: relative; z-index: 1; }
 .loader {
   position: fixed; inset: 0; z-index: 9000;
   background: var(--bg);
-  display: flex; align-items: flex-end; justify-content: space-between;
-  padding: 6vw;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2rem;
+  padding: 2rem;
   transition: transform 1s var(--ease);
 }
 .loader.is-done { transform: translateY(-100%); }
-.loader__count { font-family: var(--serif); font-size: clamp(4rem, 16vw, 14rem); line-height: .8; }
-.loader__count i { font-style: normal; font-size: .25em; vertical-align: super; }
-.loader__bar { width: 28vw; height: 1px; background: var(--line); align-self: flex-end; margin-bottom: 1.5rem; }
-.loader__bar span { display: block; height: 100%; width: 0; background: var(--ink); }
+.loader__count {
+  font-family: var(--serif); font-weight: 400;
+  font-size: clamp(4rem, 14vw, 11rem); line-height: .85; letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.loader__count i { font-style: normal; font-size: .22em; vertical-align: super; color: var(--muted); margin-left: .04em; }
+.loader__bar {
+  width: clamp(180px, 38vw, 420px); height: 2px; background: var(--line);
+  border-radius: 2px; overflow: hidden;
+}
+.loader__bar span { display: block; height: 100%; width: 0; background: var(--ink); transition: width .25s var(--ease); }
 
 /* ---------- Nav ---------- */
 .nav {
