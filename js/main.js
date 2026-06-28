@@ -709,6 +709,10 @@ menu.querySelectorAll('a[href^="#"]').forEach((a) => {
 menu.querySelectorAll(".menu__nav a").forEach((a) => {
   a.addEventListener("mouseenter", playTick);
 });
+// same "tick" sound when hovering each project card
+document.querySelectorAll(".proj-card").forEach((card) => {
+  card.addEventListener("mouseenter", playTick);
+});
 window.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && menuOpen) setMenu(false);
 });
