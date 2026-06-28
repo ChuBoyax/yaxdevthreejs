@@ -713,6 +713,12 @@ function initSoundMenu() {
   soundListEl.className = "sound-menu__list";
   soundMenu.appendChild(soundListEl);
 
+  const credit = document.createElement("div");
+  credit.className = "sound-menu__credit";
+  credit.innerHTML = `Music via <a href="https://www.jamendo.com" target="_blank" rel="noopener">Jamendo</a> · royalty-free`;
+  credit.addEventListener("click", (e) => e.stopPropagation());
+  soundMenu.appendChild(credit);
+
   soundSearchEl = search.querySelector("input");
   soundSearchEl.addEventListener("input", () => {
     clearTimeout(soundSearchTimer);
