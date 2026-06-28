@@ -412,10 +412,29 @@ section { padding: clamp(4.5rem, 5vw, 5rem) clamp(1.5rem, 4vw, 4rem); scroll-mar
 @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
 
 /* ---------- Marquee ---------- */
-.marquee { padding: 1.5rem 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); overflow: hidden; }
+.marquee { padding: 1.5rem 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); overflow: visible; }
 .marquee__track { display: inline-flex; align-items: center; gap: 2.5rem; white-space: nowrap; animation: scroll 28s linear infinite; will-change: transform; }
 .marquee__track span { font-family: var(--serif); font-size: clamp(1.8rem, 4vw, 3rem); }
 .marquee__track i { color: var(--accent); font-style: normal; }
+.marquee__item { position: relative; flex: none; display: flex; align-items: center; }
+.marquee__logo {
+  height: clamp(34px, 5vw, 54px); width: auto; display: block;
+  object-fit: contain; transition: transform .4s var(--ease), filter .4s var(--ease);
+}
+.marquee__item:hover .marquee__logo { transform: scale(1.12); }
+/* name label that pops up on hover */
+.marquee__item::after {
+  content: attr(data-name);
+  position: absolute; bottom: calc(100% + 10px); left: 50%;
+  transform: translateX(-50%) translateY(6px);
+  background: var(--ink); color: var(--bg);
+  font-family: var(--sans); font-size: .72rem; font-weight: 500;
+  text-transform: uppercase; letter-spacing: .08em; white-space: nowrap;
+  padding: .4rem .65rem; border-radius: 6px;
+  opacity: 0; pointer-events: none; z-index: 5;
+  transition: opacity .3s var(--ease), transform .3s var(--ease);
+}
+.marquee__item:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); }
 @keyframes scroll { to { transform: translateX(-50%); } }
 
 /* ---------- Work (project cards) ---------- */
