@@ -689,3 +689,97 @@ window.addEventListener("keydown", (e) => {
 
 // brand click also ducks the music
 document.querySelector(".nav__brand").addEventListener("click", duckMusic);
+
+/* =========================================================
+   11. Résumé PDF — generated on the fly from the page content
+   ========================================================= */
+function buildResumePDF() {
+  const JsPDF = window.jspdf && window.jspdf.jsPDF;
+  if (!JsPDF) { alert("PDF library failed to load. Check your connection and try again."); return; }
+
+  const doc = new JsPDF({ unit: "pt", format: "a4" });
+  const PAGE_W = doc.internal.pageSize.getWidth();
+  const PAGE_H = doc.internal.pageSize.getHeight();
+  const M = 50;                    // page margin
+  const RIGHT = PAGE_W - M;
+  const INK = [22, 20, 15];
+  const MUTED = [120, 115, 105];
+  let y = M;
+
+  const ensure = (needed) => { if (y + needed > PAGE_H - M) { doc.addPage(); y = M; } };
+  const rule = () => { doc.setDrawColor(210, 205, 196); doc.setLineWidth(0.6); doc.line(M, y, RIGHT, y); };
+
+  // ---- header ----
+  const email = (document.querySelector('a[href^="mailto:"]')?.getAttribute("href") || "").replace("mailto:", "") || "boyet@creativedevlabs.dev";
+  doc.setTextColor(...INK);
+  doc.setFont("times", "bold"); doc.setFontSize(30);
+  doc.text("Boyet", M, y + 6);
+  doc.setFont("helvetica", "normal"); doc.setFontSize(11); doc.setTextColor(...MUTED);
+  doc.text("Creative Developer — Front-end · WebGL · Motion", M, y + 26);
+  doc.text(`${email}   ·   Philippines (GMT+8)`, M, y + 42);
+  y += 60; rule(); y += 26;
+
+  // ---- a titled block of bullet items ----
+  const block = (title, items) => {
+    if (!items.length) return;
+    ensure(28 + items.length * 16);
+    doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(...MUTED);
+    doc.text(title.toUpperCase(), M, y, { charSpace: 1.2 });
+    y += 16;
+    doc.setFont("helvetica", "normal"); doc.setFontSize(11); doc.setTextColor(...INK);
+    items.forEach((it) => {
+      ensure(16);
+      doc.text("•", M, y);
+      doc.text(doc.splitTextToSize(it, RIGHT - M - 14), M + 14, y);
+      y += 16;
+    });
+    y += 14;
+  };
+
+  // pull the three résumé columns straight from the DOM (stays in sync)
+  document.querySelectorAll(".resume__col").forEach((col) => {
+    const title = col.querySelector("h4")?.textContent.trim() || "";
+    const items = [...col.querySelectorAll("li")].map((li) => li.textContent.trim());
+    block(title, items);
+  });
+
+  // ---- experience ----
+  const exps = [...document.querySelectorAll(".exp__item")];
+  if (exps.length) {
+    ensure(30);
+    doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(...MUTED);
+    doc.text("EXPERIENCE", M, y, { charSpace: 1.2 });
+    y += 20;
+    exps.forEach((item) => {
+      const year = item.querySelector(".exp__year")?.textContent.trim() || "";
+      const role = item.querySelector(".exp__body h3")?.textContent.trim() || "";
+      const company = item.querySelector(".exp__body > p")?.textContent.trim() || "";
+      const desc = item.querySelector(".exp__desc")?.textContent.trim() || "";
+      const descLines = doc.splitTextToSize(desc, RIGHT - M);
+      ensure(20 + 16 + descLines.length * 14 + 12);
+
+      doc.setFont("times", "bold"); doc.setFontSize(13); doc.setTextColor(...INK);
+      doc.text(role, M, y);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(...MUTED);
+      doc.text(year, RIGHT, y, { align: "right" });
+      y += 15;
+      doc.setFontSize(10);
+      doc.text(company, M, y);
+      y += 15;
+      doc.setFontSize(10.5); doc.setTextColor(...INK);
+      doc.text(descLines, M, y);
+      y += descLines.length * 14 + 16;
+    });
+  }
+
+  doc.save("Boyet-Resume.pdf");
+}
+
+const resumeBtn = document.getElementById("resumeBtn");
+if (resumeBtn) {
+  resumeBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    playTick();
+    buildResumePDF();
+  });
+}

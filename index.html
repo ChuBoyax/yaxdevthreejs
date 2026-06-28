@@ -52,12 +52,12 @@
   <!-- Full-screen slide-over menu -->
   <div class="menu" id="menu" aria-hidden="true">
     <nav class="menu__nav">
-      <a href="#home" data-cursor><span class="menu__idx">01</span>Home</a>
-      <a href="#about" data-cursor><span class="menu__idx">02</span>About</a>
-      <a href="#resume" data-cursor><span class="menu__idx">03</span>Resume</a>
-      <a href="#projects" data-cursor><span class="menu__idx">04</span>Projects</a>
-      <a href="#experience" data-cursor><span class="menu__idx">05</span>Experience</a>
-      <a href="#contact" data-cursor><span class="menu__idx">06</span>Contact</a>
+      <a href="#home" data-cursor><span class="menu__idx"></span>Home</a>
+      <a href="#about" data-cursor><span class="menu__idx"></span>About</a>
+      <a href="#resume" data-cursor><span class="menu__idx"></span>Resume</a>
+      <a href="#projects" data-cursor><span class="menu__idx"></span>Projects</a>
+      <a href="#experience" data-cursor><span class="menu__idx"></span>Experience</a>
+      <a href="#contact" data-cursor><span class="menu__idx"></span>Contact</a>
     </nav>
     <div class="menu__foot">
       <a class="menu__mail" href="mailto:boyet@creativedevlabs.dev" data-cursor>boyet@creativedevlabs.dev</a>
@@ -100,7 +100,6 @@
     <!-- ABOUT -->
     <section class="studio" id="about">
       <div class="section-head">
-        <span class="index">01</span>
         <h2 class="reveal-y">About</h2>
       </div>
       <div class="studio__grid">
@@ -138,7 +137,6 @@
     <!-- RESUME -->
     <section class="resume" id="resume">
       <div class="section-head">
-        <span class="index">02</span>
         <h2 class="reveal-y">Resume</h2>
       </div>
       <div class="resume__grid">
@@ -171,7 +169,7 @@
           </ul>
         </div>
       </div>
-      <a class="resume__btn reveal" href="#" data-cursor>
+      <a class="resume__btn reveal" id="resumeBtn" href="#" data-cursor>
         <span>Download Résumé (PDF)</span>
         <svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 1v9M3 6l4 4 4-4M2 13h10" stroke="currentColor" fill="none" stroke-width="1.4"/></svg>
       </a>
@@ -180,7 +178,6 @@
     <!-- PROJECTS -->
     <section class="work" id="projects">
       <div class="section-head">
-        <span class="index">03</span>
         <h2 class="reveal-y">Projects</h2>
       </div>
       <ul class="work__list" id="workList">
@@ -221,7 +218,6 @@
     <!-- EXPERIENCE -->
     <section class="experience" id="experience">
       <div class="section-head">
-        <span class="index">04</span>
         <h2 class="reveal-y">Experience</h2>
       </div>
       <ul class="exp__list">
@@ -254,7 +250,6 @@
 
     <!-- CONTACT -->
     <section class="contact" id="contact">
-      <span class="index">05</span>
       <h2 class="contact__title">
         <span class="line"><span class="reveal-y">Let's build</span></span>
         <span class="line"><span class="reveal-y"><em>something</em> good.</span></span>
@@ -282,6 +277,7 @@
     }
   }
   </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>
