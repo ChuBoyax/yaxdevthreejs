@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Boyet — Creative Developer & Studio</title>
+  <title>Yax Dev</title>
   <meta name="description" content="Independent studio crafting brand, digital & motion experiences with code." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -54,10 +54,13 @@
           </div>
         </div>
       </label>
-      <button class="nav__sound is-on" id="soundToggle" data-cursor aria-label="Toggle sound">
-        <span class="eq"><i></i><i></i><i></i><i></i></span>
-        <span class="nav__sound-txt">Sound</span>
-      </button>
+      <div class="nav__sound-wrap">
+        <button class="nav__sound is-on" id="soundToggle" data-cursor aria-haspopup="true" aria-expanded="false" aria-label="Choose music">
+          <span class="eq"><i></i><i></i><i></i><i></i></span>
+          <span class="nav__sound-txt">Sound</span>
+        </button>
+        <div class="sound-menu" id="soundMenu" role="menu" aria-label="Music"></div>
+      </div>
       <div class="nav__clock" id="clock">—</div>
       <button class="menu-toggle" id="menuToggle" data-cursor aria-label="Open menu" aria-expanded="false">
         <span class="menu-toggle__dots"><i></i><i></i></span>

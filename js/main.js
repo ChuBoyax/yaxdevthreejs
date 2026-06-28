@@ -539,8 +539,35 @@ document.querySelectorAll('a[href^="#"]').forEach((a) => {
    8. Audio — looping lofi track (your MP3) routed through a
    Web Audio low-pass so the menu can "muffle/duck" it.
    ========================================================= */
-const MUSIC_URL = "music/apalonbeats-lofi-lofi-music-549425.mp3";
+// add more tracks here — just drop the .mp3 in music/ and add a { name, url } line
+const LOCAL_TRACKS = [
+  { name: "Lo-fi Beats", url: "music/apalonbeats-lofi-lofi-music-549425.mp3" },
+  { name: "Good Night (Cozy Chill)", url: "music/fassounds-good-night-lofi-cozy-chill-music-160166.mp3" },
+  { name: "Leberch Lo-fi", url: "music/leberch-lofi-516620.mp3" },
+  { name: "Lo-fi Hip-Hop", url: "music/leberch-lofi-hip-hop-519408.mp3" },
+  { name: "Mirostar Beats", url: "music/mirostar-lofi-beats-531504.mp3" },
+  { name: "Lo-fi Girl (Chill)", url: "music/mirostar-lofi-lofi-girl-lofi-chill-2-531491.mp3" },
+  { name: "Mirostar Lo-fi", url: "music/mirostar-lofi-lofi-music-531487.mp3" },
+  { name: "Lo-fi Girl", url: "music/mondamusic-lofi-lofi-girl-lofi-music-529555.mp3" },
+  { name: "Monda Chill", url: "music/mondamusic-lofi-lofi-music-lofi-chill-529558.mp3" },
+  { name: "Melody", url: "music/pulsebox-lofi-melody-522894.mp3" },
+  { name: "Mood", url: "music/pulsebox-lofi-mood-522871.mp3" },
+  { name: "Night", url: "music/pulsebox-lofi-night-522890.mp3" },
+  { name: "Production", url: "music/pulsebox-lofi-production-522875.mp3" },
+  { name: "Smooth", url: "music/pulsebox-lofi-smooth-522876.mp3" },
+  { name: "The Mountain", url: "music/the_mountain-lofi-513863.mp3" },
+  { name: "Mountain Lo-fi", url: "music/the_mountain-lofi-lofi-music-496553.mp3" },
+];
+let onlineTracks = [];                       // filled from Jamendo (default lo-fi or search results)
+let TRACKS = LOCAL_TRACKS.slice();           // local + online combined (rebuilt as online changes)
+function rebuildTracks() { TRACKS = LOCAL_TRACKS.concat(onlineTracks); }
+const MUSIC_URL = LOCAL_TRACKS[0].url;
+let currentUrl = MUSIC_URL;
 const MUSIC_VOL = 0.85;
+
+// Jamendo (free, royalty-free) — paste your Client ID here to stream many more lo-fi tracks.
+// Get one free at https://devportal.jamendo.com/  (leave "" to use local tracks only)
+const JAMENDO_CLIENT_ID = "401b57bf";
 let actx = null, master = null, musicGain = null, musicFilter = null, audioEl = null, soundOn = true;
 
 function ensureAudio() {
@@ -565,6 +592,7 @@ function initAudio() {
   audioEl = new Audio(MUSIC_URL);
   audioEl.loop = true;
   audioEl.preload = "auto";
+  audioEl.crossOrigin = "anonymous"; // needed so external (Jamendo) audio works through Web Audio
   actx.createMediaElementSource(audioEl).connect(musicFilter);
 
   if (soundOn) {
@@ -658,7 +686,123 @@ function setSound(on) {
     musicGain.gain.linearRampToValueAtTime(0.0001, actx.currentTime + 0.4);
   }
 }
-soundBtn.addEventListener("click", () => setSound(!soundOn));
+/* ---- music picker popover ---- */
+const soundMenu = document.getElementById("soundMenu");
+
+function setTrack(url) {
+  if (!url) return;
+  currentUrl = url;
+  ensureAudio();
+  if (audioEl && audioEl.src.indexOf(url) === -1) { audioEl.src = url; audioEl.load(); }
+  if (!soundOn) setSound(true);          // unmute + ramp up
+  else if (audioEl) audioEl.play().catch(() => {});
+  updateSoundMenu();
+}
+
+let soundSearchEl = null, soundListEl = null, soundSearchTimer = null;
+
+// build the fixed parts once (search box + list container) so typing keeps focus
+function initSoundMenu() {
+  if (!soundMenu) return;
+  soundMenu.innerHTML = "";
+  const search = document.createElement("div");
+  search.className = "sound-menu__search";
+  search.innerHTML = `<input type="text" id="soundSearch" placeholder="Search music…" autocomplete="off" spellcheck="false" />`;
+  soundMenu.appendChild(search);
+  soundListEl = document.createElement("div");
+  soundListEl.className = "sound-menu__list";
+  soundMenu.appendChild(soundListEl);
+
+  soundSearchEl = search.querySelector("input");
+  soundSearchEl.addEventListener("input", () => {
+    clearTimeout(soundSearchTimer);
+    const qy = soundSearchEl.value.trim();
+    soundSearchTimer = setTimeout(() => searchJamendo(qy), 350);
+  });
+  soundSearchEl.addEventListener("click", (e) => e.stopPropagation());
+
+  renderSoundList();
+}
+
+function renderSoundList() {
+  if (!soundListEl) return;
+  soundListEl.innerHTML = "";
+  const label = (txt) => {
+    const l = document.createElement("span"); l.className = "sound-menu__label"; l.textContent = txt;
+    soundListEl.appendChild(l);
+  };
+  const addItem = (tk) => {
+    const b = document.createElement("button");
+    b.className = "sound-menu__item"; b.type = "button"; b.dataset.url = tk.url;
+    b.innerHTML = `<span class="sound-menu__name">${tk.name}</span><span class="sound-menu__dot"></span>`;
+    b.addEventListener("mouseenter", playTick);
+    b.addEventListener("click", () => { setTrack(tk.url); closeSoundMenu(); });
+    soundListEl.appendChild(b);
+  };
+  const searching = soundSearchEl && soundSearchEl.value.trim();
+
+  if (LOCAL_TRACKS.length) { label("On this site"); LOCAL_TRACKS.forEach(addItem); }
+  if (onlineTracks.length) { label(searching ? "Search results" : "From Jamendo"); onlineTracks.forEach(addItem); }
+  else if (searching) { const n = document.createElement("span"); n.className = "sound-menu__empty"; n.textContent = "No results found"; soundListEl.appendChild(n); }
+
+  const mute = document.createElement("button");
+  mute.className = "sound-menu__item sound-menu__item--mute"; mute.type = "button"; mute.dataset.mute = "1";
+  mute.innerHTML = `<span class="sound-menu__name">Mute</span><span class="sound-menu__dot"></span>`;
+  mute.addEventListener("mouseenter", playTick);
+  mute.addEventListener("click", () => { setSound(false); updateSoundMenu(); closeSoundMenu(); });
+  soundListEl.appendChild(mute);
+  updateSoundMenu();
+}
+
+function updateSoundMenu() {
+  if (!soundListEl) return;
+  soundListEl.querySelectorAll(".sound-menu__item").forEach((el) => {
+    const isMute = el.dataset.mute === "1";
+    const active = isMute ? !soundOn : (soundOn && el.dataset.url === currentUrl);
+    el.classList.toggle("is-active", active);
+  });
+}
+
+let soundMenuOpen = false;
+function openSoundMenu() {
+  soundMenuOpen = true; soundMenu.classList.add("is-open");
+  soundBtn.setAttribute("aria-expanded", "true"); updateSoundMenu();
+}
+function closeSoundMenu() {
+  soundMenuOpen = false; soundMenu.classList.remove("is-open");
+  soundBtn.setAttribute("aria-expanded", "false");
+}
+
+soundBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  ensureAudio();
+  soundMenuOpen ? closeSoundMenu() : openSoundMenu();
+});
+document.addEventListener("click", (e) => {
+  if (soundMenuOpen && !soundMenu.contains(e.target) && !soundBtn.contains(e.target)) closeSoundMenu();
+});
+window.addEventListener("keydown", (e) => { if (e.key === "Escape" && soundMenuOpen) closeSoundMenu(); });
+initSoundMenu();
+
+// fetch tracks from Jamendo — default popular lo-fi, or by search query (Client ID required)
+async function searchJamendo(query) {
+  if (!JAMENDO_CLIENT_ID || !soundListEl) return;
+  try {
+    const base = `https://api.jamendo.com/v3.0/tracks/?client_id=${JAMENDO_CLIENT_ID}&format=json&limit=120&audioformat=mp32`;
+    const url = query
+      ? `${base}&namesearch=${encodeURIComponent(query)}&order=popularity_total`
+      : `${base}&fuzzytags=lofi+chill&order=popularity_total`;
+    const res = await fetch(url);
+    const data = await res.json();
+    onlineTracks = (data.results || [])
+      .filter((t) => t.audio)
+      .map((t) => ({ name: `${t.name} — ${t.artist_name}`, url: t.audio }));
+    rebuildTracks();
+    renderSoundList();
+  } catch (e) { /* offline / API error — keep current tracks */ }
+}
+searchJamendo("");   // initial default lo-fi list
+
 window.addEventListener("pointerdown", ensureAudio);
 
 /* =========================================================
