@@ -127,7 +127,7 @@ section.page.is-active {
 .nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 1.5rem clamp(1.5rem, 4vw, 4rem);
+  padding: 0.5rem clamp(1.5rem, 4vw, 4rem);
 }
 /* adaptive difference blend on the text/controls only — NOT the theme switch */
 .nav__brand, .nav__sound, .nav__clock, .menu-toggle {
@@ -142,6 +142,14 @@ html[data-theme="light"] .menu-toggle {
 }
 .nav__brand { font-family: var(--serif); font-size: 1.35rem; letter-spacing: .01em; }
 .nav__brand sup { font-size: .5em; }
+/* logo image as the brand — shown with its true colors (no blend) */
+.nav__brand { mix-blend-mode: normal; display: inline-flex; align-items: center; }
+.nav__brand-logo { height: clamp(64px, 8vw, 104px); width: auto; display: block; }
+/* swap brand logo per theme: white logo for dark, black logo for light */
+html[data-theme="dark"] .nav__brand-logo--light { display: none; }
+html[data-theme="dark"] .nav__brand-logo--dark { display: block; }
+html[data-theme="light"] .nav__brand-logo--dark { display: none; }
+html[data-theme="light"] .nav__brand-logo--light { display: block; }
 .nav__links { display: flex; gap: 1.6rem; }
 @media (max-width: 1080px) { .nav__links { gap: 1.1rem; } .nav__links a { font-size: .72rem; } }
 .nav__links a, .nav__clock { font-size: .78rem; text-transform: uppercase; letter-spacing: .12em; }
@@ -389,7 +397,7 @@ section { padding: clamp(4.5rem, 5vw, 5rem) clamp(1.5rem, 4vw, 4rem); scroll-mar
 
 /* ---------- Hero ---------- */
 .hero { display: flex; flex-direction: column; gap: 2.5rem; min-height: 100%; }
-.hero__inner { width: 100%; }
+.hero__inner { width: 100%; margin-top: auto; transform: translateY(clamp(2rem, 8vh, 7rem)); }
 /* marquee pinned to the very bottom of the Home page, full-bleed */
 .hero .marquee {
   margin-top: auto;
@@ -400,8 +408,8 @@ section { padding: clamp(4.5rem, 5vw, 5rem) clamp(1.5rem, 4vw, 4rem); scroll-mar
 .eyebrow { font-size: .8rem; text-transform: uppercase; letter-spacing: .15em; color: var(--muted); margin-bottom: 2rem; }
 .hero__title {
   font-family: var(--serif); font-weight: 400;
-  font-size: clamp(2.3rem, 7.6vw, 7rem);
-  line-height: 1; letter-spacing: -0.01em;
+  font-size: clamp(1.7rem, 4.4vw, 4rem);
+  line-height: 1.08; letter-spacing: -0.01em;
 }
 .hero__title .line { display: block; overflow: hidden; }
 .hero__title em { color: var(--accent); }
