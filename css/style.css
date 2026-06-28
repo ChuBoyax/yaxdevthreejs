@@ -662,8 +662,9 @@ section { padding: clamp(4.5rem, 5vw, 5rem) clamp(1.5rem, 4vw, 4rem); scroll-mar
   /* sections — wider reading area, clear the fixed nav */
   section { padding: clamp(3.5rem, 9vw, 4.5rem) 1.25rem; }
 
-  /* hero — centered group; marquee spaced (not pinned) */
-  .hero { padding-top: clamp(5rem, 18vw, 6.5rem); padding-bottom: 2.5rem; gap: 2rem; }
+  /* hero — keep it centered, but drop the desktop downward push */
+  .hero__inner { margin-top: 0; transform: none; }
+  .hero { padding-top: clamp(5rem, 16vw, 6rem); padding-bottom: 2.5rem; gap: 2rem; }
   .hero__meta { flex-direction: column; align-items: center; gap: 1.4rem; margin-top: 2rem; }
   .hero__meta p { font-size: .95rem; max-width: 100%; }
   .hero .marquee { margin: 1.8rem -1.25rem 0; }
