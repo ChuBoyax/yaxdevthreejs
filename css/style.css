@@ -418,37 +418,56 @@ section { padding: clamp(4.5rem, 5vw, 5rem) clamp(1.5rem, 4vw, 4rem); scroll-mar
 .marquee__track i { color: var(--accent); font-style: normal; }
 @keyframes scroll { to { transform: translateX(-50%); } }
 
-/* ---------- Work ---------- */
+/* ---------- Work (project cards) ---------- */
 .work { position: relative; }
-.work__list { list-style: none; }
-.work__item {
-  display: grid; grid-template-columns: 4rem 1fr auto 5rem; align-items: center; gap: 1.5rem;
-  padding: 1.6rem 0; border-bottom: 1px solid var(--line);
-  transition: padding .5s var(--ease); position: relative;
+.work__grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(1rem, 2vw, 1.6rem);
 }
-.work__item h3 { font-family: var(--serif); font-weight: 400; font-size: clamp(1.6rem, 4vw, 2.8rem); transition: transform .5s var(--ease), opacity .4s; }
-.work__num, .work__year { font-size: .8rem; color: var(--muted); letter-spacing: .08em; }
-.work__tag { font-size: .85rem; color: var(--muted); }
-.work__item:hover { padding-left: 1.5rem; }
-.work__item:hover h3 { transform: translateX(.5rem); }
-.work__item::before {
-  content: ""; position: absolute; inset: 0; background: var(--ink);
-  transform: scaleY(0); transform-origin: bottom; z-index: -1; transition: transform .5s var(--ease);
-}
-@media (max-width: 720px) {
-  .work__item { grid-template-columns: 2.5rem 1fr auto; }
-  .work__tag { display: none; }
-}
+@media (max-width: 900px) { .work__grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .work__grid { grid-template-columns: 1fr; } }
 
-/* floating image preview that follows cursor */
-.work__preview {
-  position: fixed; top: 0; left: 0; width: 22vw; max-width: 340px; aspect-ratio: 4/5;
-  pointer-events: none; z-index: 50; opacity: 0; overflow: hidden; border-radius: 4px;
-  transform: translate(-50%, -50%) scale(.8); transition: opacity .4s var(--ease), transform .5s var(--ease);
+.proj-card {
+  position: relative; display: block; aspect-ratio: 4 / 3;
+  border-radius: 12px; overflow: hidden; background: var(--panel);
+  transition: transform .5s var(--ease), border-radius .5s var(--ease), box-shadow .5s var(--ease);
 }
-.work__preview.is-visible { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-.work__preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
-@media (max-width: 720px) { .work__preview { display: none; } }
+.proj-card__media { position: absolute; inset: 0; }
+.proj-card__media img {
+  width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block;
+  transition: transform .6s var(--ease), filter .5s var(--ease);
+  filter: saturate(.92);
+}
+/* dark gradient so the title stays readable over any screenshot — fades out on hover */
+.proj-card::after {
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(to top, rgba(0,0,0,.82) 0%, rgba(0,0,0,.25) 42%, rgba(0,0,0,0) 68%);
+  opacity: 1; transition: opacity .5s var(--ease);
+}
+/* the Uiverse-style border that rotates into place on hover */
+.proj-card__border {
+  position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  border: 2px solid var(--accent); border-radius: inherit;
+  opacity: 0; transform: rotate(8deg); transition: all .5s var(--ease);
+}
+.proj-card__info {
+  position: absolute; inset: auto 0 0 0; z-index: 3;
+  padding: 1.1rem 1.2rem; color: #fff;
+  display: flex; flex-direction: column; gap: .35rem;
+  opacity: 1; transition: opacity .45s var(--ease);
+}
+.proj-card__num { font-size: .72rem; letter-spacing: .12em; opacity: .65; }
+.proj-card__info h3 { font-family: var(--serif); font-weight: 400; font-size: clamp(1.3rem, 2vw, 1.7rem); line-height: 1.1; }
+.proj-card__meta { display: flex; justify-content: space-between; font-size: .74rem; text-transform: uppercase; letter-spacing: .08em; opacity: .8; }
+
+.proj-card:hover { transform: scale(1.045); border-radius: 4px; box-shadow: 0 22px 55px rgba(0,0,0,.45); }
+.proj-card:hover .proj-card__media img { transform: scale(1.08); filter: saturate(1.05); }
+.proj-card:hover .proj-card__border { inset: 12px; opacity: 1; transform: rotate(0); }
+/* clean reveal: gradient + text fade away so the full screenshot shows */
+.proj-card:hover::after { opacity: 0; }
+.proj-card:hover .proj-card__info { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .proj-card, .proj-card__media img, .proj-card__border { transition: none; }
+}
 
 /* ---------- Studio ---------- */
 /* About: text left, full-bleed portrait blended into the dark background on the right */

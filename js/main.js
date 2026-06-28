@@ -499,26 +499,28 @@ window.addEventListener("hashchange", () => {
    6. Work — floating image preview
    ========================================================= */
 const preview = document.getElementById("workPreview");
-const previewImg = preview.querySelector("img");
+const previewImg = preview ? preview.querySelector("img") : null;
 let ppx = 0, ppy = 0, ptx = 0, pty = 0, previewActive = false;
-document.querySelectorAll(".work__item").forEach((item) => {
-  item.addEventListener("mouseenter", () => {
-    previewImg.src = item.dataset.img;
-    preview.classList.add("is-visible");
-    previewActive = true;
+if (preview && previewImg) {
+  document.querySelectorAll(".work__item").forEach((item) => {
+    item.addEventListener("mouseenter", () => {
+      previewImg.src = item.dataset.img;
+      preview.classList.add("is-visible");
+      previewActive = true;
+    });
+    item.addEventListener("mouseleave", () => {
+      preview.classList.remove("is-visible");
+      previewActive = false;
+    });
   });
-  item.addEventListener("mouseleave", () => {
-    preview.classList.remove("is-visible");
-    previewActive = false;
-  });
-});
-window.addEventListener("pointermove", (e) => { ptx = e.clientX; pty = e.clientY; });
-(function previewLoop() {
-  ppx += (ptx - ppx) * 0.12;
-  ppy += (pty - ppy) * 0.12;
-  if (previewActive) { preview.style.left = ppx + "px"; preview.style.top = ppy + "px"; }
-  requestAnimationFrame(previewLoop);
-})();
+  window.addEventListener("pointermove", (e) => { ptx = e.clientX; pty = e.clientY; });
+  (function previewLoop() {
+    ppx += (ptx - ppx) * 0.12;
+    ppy += (pty - ppy) * 0.12;
+    if (previewActive) { preview.style.left = ppx + "px"; preview.style.top = ppy + "px"; }
+    requestAnimationFrame(previewLoop);
+  })();
+}
 
 /* =========================================================
    7. In-page links → switch pages (with transition)
