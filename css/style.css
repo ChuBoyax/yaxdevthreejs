@@ -468,3 +468,57 @@ section { padding: clamp(2.5rem, 5vw, 5rem) clamp(1.5rem, 4vw, 4rem); scroll-mar
 .reveal { transform: translateY(20px); transition: opacity .9s var(--ease), transform .9s var(--ease); }
 .reveal-y { display: inline-block; transform: translateY(110%); transition: opacity .9s var(--ease), transform 1s var(--ease); }
 .is-in.reveal, .is-in .reveal, .is-in .reveal-y, .is-in.reveal-y { opacity: 1; transform: none; }
+
+/* =========================================================
+   Mobile refinements (polish for phones)
+   ========================================================= */
+@media (max-width: 600px) {
+  /* tighter, balanced nav */
+  .nav { padding: 1.1rem 1.25rem; }
+  .nav__brand { font-size: 1.2rem; }
+  .nav__right { gap: 1.1rem; }
+  .menu-toggle { width: 42px; height: 42px; }
+
+  /* hero — breathing room from screen edges */
+  .hero { min-height: 100svh; padding-bottom: 2.5rem; }
+  .hero__meta { gap: 1.6rem; margin-top: 2.2rem; }
+  .hero__meta p { font-size: .95rem; max-width: 100%; }
+
+  /* sections — a touch wider reading area */
+  section { padding: clamp(2.5rem, 8vw, 4rem) 1.25rem; }
+  .section-head { gap: 1rem; margin-bottom: 1.8rem; }
+
+  /* projects list — compact rows */
+  .work__item { gap: 1rem; padding: 1.2rem 0; }
+  .work__num { align-self: start; padding-top: .4rem; }
+
+  /* experience — clearer year label */
+  .exp__year { padding-top: 0; }
+
+  /* contact — tighter vertical rhythm */
+  .contact { min-height: 60vh; }
+  .contact__mail { margin-top: 1.8rem; }
+  .contact__socials { gap: 1.2rem; margin-top: 2rem; }
+
+  /* footer — stack cleanly, left aligned */
+  .footer { flex-direction: column; align-items: flex-start; gap: .6rem; text-align: left; }
+
+  /* slide-over menu footer — stack mail + socials */
+  .menu__foot { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .menu__socials { gap: 1.1rem; flex-wrap: wrap; }
+}
+
+@media (max-width: 380px) {
+  .nav__clock { display: none; }       /* free up space on tiny screens */
+  .nav__right { gap: .9rem; }
+}
+
+/* respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
