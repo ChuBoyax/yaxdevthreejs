@@ -73,7 +73,7 @@ section.page.is-active {
 }
 
 /* content panels float over the fluid but stay readable */
-.work, .studio, .resume, .experience, .footer {
+.work, .studio, .resume, .experience, .testimonials, .footer {
   position: relative;
   background: var(--panel);
   backdrop-filter: blur(7px);
@@ -672,12 +672,27 @@ section { padding: clamp(4.5rem, 5vw, 5rem) clamp(1.5rem, 4vw, 4rem); scroll-mar
 @media (max-width: 900px) { .tm__grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 620px) { .tm__grid { grid-template-columns: 1fr; } }
 .tm__card {
+  position: relative;
   display: flex; flex-direction: column; gap: .9rem;
   padding: 1.6rem; border: 1px solid var(--line); border-radius: 14px;
   background: var(--panel); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
   transition: transform .5s var(--ease), border-color .4s var(--ease);
 }
 .tm__card:hover { transform: translateY(-4px); border-color: var(--accent); }
+/* social verification badge — top-right of each card */
+.tm__social {
+  position: absolute; top: 1.3rem; right: 1.3rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 9px;
+  color: var(--muted); border: 1px solid var(--line);
+  transition: color .3s var(--ease), border-color .3s var(--ease),
+              transform .3s var(--ease), background .3s var(--ease);
+}
+.tm__social svg { width: 16px; height: 16px; }
+.tm__social:hover {
+  color: var(--accent); border-color: var(--accent);
+  transform: translateY(-2px);
+}
 .tm__stars { color: var(--accent); letter-spacing: .15em; font-size: .9rem; }
 .tm__card blockquote { font-family: var(--serif); font-size: 1.1rem; line-height: 1.5; color: var(--ink); }
 .tm__card figcaption { display: flex; flex-direction: column; gap: .15rem; margin-top: auto; }
