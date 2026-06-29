@@ -993,10 +993,13 @@ if (resumeBtn) {
 /* =========================================================
    12. Testimonials — visitor feedback form
    ========================================================= */
-// Laravel + Filament backend (testimonials-api).
-// Local (Herd): http://testimonials-api.test/api/testimonials
-// When you deploy the Laravel app, change this to your live API URL.
-const TESTIMONIAL_API = "http://testimonials-api.test/api/testimonials";
+// Laravel + Filament backend (testimonials-api), deployed on Vercel.
+// Local (Herd) was: http://testimonials-api.test/api/testimonials
+// NOTE: this is a deployment-specific URL (the random hash changes on every
+// redeploy). Replace it with your project's stable Production domain from the
+// Vercel dashboard (Project → Settings → Domains) so the live site keeps
+// working after future backend deploys.
+const TESTIMONIAL_API = "https://testimonials-e3x0dyzu4-dedalboyet16-7675s-projects.vercel.app/api/testimonials";
 
 (function initTestimonials() {
   const form = document.getElementById("tmForm");
