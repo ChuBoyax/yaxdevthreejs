@@ -993,13 +993,20 @@ if (resumeBtn) {
 /* =========================================================
    12. Testimonials — visitor feedback form
    ========================================================= */
-// Laravel + Filament backend (testimonials-api), deployed on Vercel.
-// Local (Herd) was: http://testimonials-api.test/api/testimonials
-// NOTE: this is a deployment-specific URL (the random hash changes on every
-// redeploy). Replace it with your project's stable Production domain from the
-// Vercel dashboard (Project → Settings → Domains) so the live site keeps
-// working after future backend deploys.
-const TESTIMONIAL_API = "https://testimonials-e3x0dyzu4-dedalboyet16-7675s-projects.vercel.app/api/testimonials";
+// Laravel + Filament backend (testimonials-api).
+// Use the local Herd backend during local dev and the deployed API in production,
+// so testing locally always hits the latest code (you can see new fields like the
+// social badge immediately, instead of an old frozen production deployment).
+const TM_LOCAL_API = "http://testimonials-api.test/api/testimonials";
+// NOTE: the production URL is a specific Vercel deployment — the random hash
+// changes on every redeploy. Replace it with your stable Production domain
+// (Vercel → project → Settings → Domains) so the live site survives redeploys.
+const TM_PROD_API = "https://testimonials-e3x0dyzu4-dedalboyet16-7675s-projects.vercel.app/api/testimonials";
+const TESTIMONIAL_API = (
+  location.hostname.endsWith(".test") ||
+  location.hostname === "localhost" ||
+  location.hostname === "127.0.0.1"
+) ? TM_LOCAL_API : TM_PROD_API;
 
 (function initTestimonials() {
   const form = document.getElementById("tmForm");
