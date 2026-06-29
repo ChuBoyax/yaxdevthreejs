@@ -989,3 +989,88 @@ if (resumeBtn) {
     buildResumePDF();
   });
 }
+
+/* =========================================================
+   12. Testimonials — visitor feedback form
+   ========================================================= */
+// Laravel + Filament backend (testimonials-api).
+// Local (Herd): http://testimonials-api.test/api/testimonials
+// When you deploy the Laravel app, change this to your live API URL.
+const TESTIMONIAL_API = "http://testimonials-api.test/api/testimonials";
+
+(function initTestimonials() {
+  const form = document.getElementById("tmForm");
+  if (!form) return;
+  const grid = document.getElementById("tmGrid");
+  const rate = document.getElementById("tmRate");
+  const ratingInput = document.getElementById("tmRating");
+  const status = document.getElementById("tmStatus");
+  const submitBtn = form.querySelector(".tm__submit");
+  const stars = rate ? [...rate.querySelectorAll(".tm__star")] : [];
+  let rating = 5;
+
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => (
+    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+  ));
+
+  const paint = (n) => stars.forEach((s) => s.classList.toggle("is-on", Number(s.dataset.val) <= n));
+  stars.forEach((s) => {
+    s.addEventListener("mouseenter", () => { paint(Number(s.dataset.val)); playTick(); });
+    s.addEventListener("click", () => { rating = Number(s.dataset.val); ratingInput.value = rating; paint(rating); });
+  });
+  if (rate) rate.addEventListener("mouseleave", () => paint(rating));
+
+  const setStatus = (msg, kind) => {
+    status.textContent = msg;
+    status.classList.toggle("is-ok", kind === "ok");
+    status.classList.toggle("is-err", kind === "err");
+  };
+
+  // load approved testimonials from the backend (keeps the static cards as fallback)
+  async function loadTestimonials() {
+    if (!grid) return;
+    try {
+      const res = await fetch(TESTIMONIAL_API, { headers: { "Accept": "application/json" } });
+      if (!res.ok) return;
+      const list = await res.json();
+      if (!Array.isArray(list) || !list.length) return;
+      grid.innerHTML = list.map((t) => {
+        const r = Math.max(1, Math.min(5, Number(t.rating) || 5));
+        return `<figure class="tm__card reveal is-in">
+          <div class="tm__stars" aria-label="${r} out of 5 stars">${"★".repeat(r)}</div>
+          <blockquote>${esc(t.message)}</blockquote>
+          <figcaption>
+            <span class="tm__name">${esc(t.name)}</span>
+            ${t.role ? `<span class="tm__role">${esc(t.role)}</span>` : ""}
+          </figcaption>
+        </figure>`;
+      }).join("");
+    } catch (e) { /* offline / API down — keep the static fallback cards */ }
+  }
+  loadTestimonials();
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = form.name.value.trim();
+    const role = form.role.value.trim();
+    const message = form.message.value.trim();
+    if (!name || !message) { setStatus("Please add your name and feedback.", "err"); return; }
+
+    try {
+      submitBtn.disabled = true;
+      setStatus("Sending…", "");
+      const res = await fetch(TESTIMONIAL_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({ name, role, rating, message }),
+      });
+      if (!res.ok) throw new Error("Request failed");
+      form.reset(); rating = 5; ratingInput.value = 5; paint(5);
+      setStatus("Salamat! Your feedback was submitted for review. 🙌", "ok");
+    } catch (err) {
+      setStatus("Sorry, something went wrong. Please try again later.", "err");
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+})();

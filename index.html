@@ -74,6 +74,7 @@
       <a href="#resume" data-cursor><span class="menu__idx"></span>Resume</a>
       <a href="#projects" data-cursor><span class="menu__idx"></span>Projects</a>
       <a href="#experience" data-cursor><span class="menu__idx"></span>Experience</a>
+      <a href="#testimonials" data-cursor><span class="menu__idx"></span>Testimonials</a>
       <a href="#contact" data-cursor><span class="menu__idx"></span>Contact</a>
     </nav>
     <div class="menu__foot">
@@ -149,8 +150,8 @@
               <h4>Focus</h4>
               <ul>
                 <li>Front-end Engineering</li>
-                <li>WebGL / Three.js</li>
-                <li>Interaction &amp; Motion</li>
+                <li>Full-Stack Development</li>
+                <li>Backend  &amp; Systems</li>
                 <li>UI / UX Design</li>
               </ul>
             </div>
@@ -386,6 +387,66 @@
           </div>
         </li>
       </ul>
+    </section>
+    <section class="testimonials page" id="testimonials">
+      <div class="section-head">
+        <h2 class="reveal-y">Testimonials</h2>
+      </div>
+      <!-- Approved testimonials — edit / add real ones here -->
+      <div class="tm__grid" id="tmGrid">
+        <figure class="tm__card reveal">
+          <div class="tm__stars" aria-label="5 out of 5 stars">★★★★★</div>
+          <blockquote>Boyet delivered our system ahead of schedule and the attention to detail was top-notch. Smooth, fast, and exactly what we needed.</blockquote>
+          <figcaption>
+            <span class="tm__name">Maria Santos</span>
+            <span class="tm__role">Project Lead · Creative Dev Labs</span>
+          </figcaption>
+        </figure>
+        <figure class="tm__card reveal">
+          <div class="tm__stars" aria-label="5 out of 5 stars">★★★★★</div>
+          <blockquote>Clean code, great communication, and a real eye for UX. The portal he built for us is reliable and easy to use.</blockquote>
+          <figcaption>
+            <span class="tm__name">John Reyes</span>
+            <span class="tm__role">IT Coordinator</span>
+          </figcaption>
+        </figure>
+        <figure class="tm__card reveal">
+          <div class="tm__stars" aria-label="5 out of 5 stars">★★★★★</div>
+          <blockquote>Professional and dependable. He understood the requirements quickly and turned them into a polished product.</blockquote>
+          <figcaption>
+            <span class="tm__name">Anna Cruz</span>
+            <span class="tm__role">Client</span>
+          </figcaption>
+        </figure>
+      </div>
+
+      <div class="tm__form-wrap reveal">
+        <h3 class="tm__form-title">Leave a feedback</h3>
+        <p class="tm__form-sub">Salamat sa pagbisita! I'd love to hear your thoughts about this portfolio.</p>
+        <form class="tm__form" id="tmForm" novalidate>
+          <div class="tm__row">
+            <input class="tm__input" type="text" name="name" placeholder="Your name" required maxlength="60" autocomplete="name" />
+            <input class="tm__input" type="text" name="role" placeholder="Role / Company (optional)" maxlength="80" />
+          </div>
+          <div class="tm__rate-row">
+            <span class="tm__rate-label">Rating</span>
+            <div class="tm__rate" id="tmRate" role="radiogroup" aria-label="Rating">
+              <button type="button" class="tm__star is-on" data-val="1" aria-label="1 star">★</button>
+              <button type="button" class="tm__star is-on" data-val="2" aria-label="2 stars">★</button>
+              <button type="button" class="tm__star is-on" data-val="3" aria-label="3 stars">★</button>
+              <button type="button" class="tm__star is-on" data-val="4" aria-label="4 stars">★</button>
+              <button type="button" class="tm__star is-on" data-val="5" aria-label="5 stars">★</button>
+            </div>
+            <input type="hidden" name="rating" id="tmRating" value="5" />
+          </div>
+          <textarea class="tm__input tm__textarea" name="message" placeholder="Your feedback about the portfolio…" required maxlength="500"></textarea>
+          <button class="tm__submit" type="submit" data-cursor>
+            <span>Send feedback</span>
+            <svg width="14" height="14" viewBox="0 0 14 14"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" fill="none" stroke-width="1.4"/></svg>
+          </button>
+          <p class="tm__status" id="tmStatus" role="status" aria-live="polite"></p>
+        </form>
+      </div>
     </section>
     <section class="contact page" id="contact">
       <h2 class="contact__title">
