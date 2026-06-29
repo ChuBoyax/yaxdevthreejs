@@ -1056,6 +1056,7 @@ const TESTIMONIAL_API = "https://testimonials-e3x0dyzu4-dedalboyet16-7675s-proje
     e.preventDefault();
     const name = form.name.value.trim();
     const role = form.role.value.trim();
+    const social = form.social.value.trim();
     const message = form.message.value.trim();
     if (!name || !message) { setStatus("Please add your name and feedback.", "err"); return; }
 
@@ -1065,7 +1066,7 @@ const TESTIMONIAL_API = "https://testimonials-e3x0dyzu4-dedalboyet16-7675s-proje
       const res = await fetch(TESTIMONIAL_API, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Accept": "application/json" },
-        body: JSON.stringify({ name, role, rating, message }),
+        body: JSON.stringify({ name, role, social, rating, message }),
       });
       if (!res.ok) throw new Error("Request failed");
       form.reset(); rating = 5; ratingInput.value = 5; paint(5);
