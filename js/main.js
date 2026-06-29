@@ -998,10 +998,11 @@ if (resumeBtn) {
 // so testing locally always hits the latest code (you can see new fields like the
 // social badge immediately, instead of an old frozen production deployment).
 const TM_LOCAL_API = "http://testimonials-api.test/api/testimonials";
-// NOTE: the production URL is a specific Vercel deployment — the random hash
-// changes on every redeploy. Replace it with your stable Production domain
-// (Vercel → project → Settings → Domains) so the live site survives redeploys.
-const TM_PROD_API = "https://testimonials-e3x0dyzu4-dedalboyet16-7675s-projects.vercel.app/api/testimonials";
+// Use the STABLE production alias (auto-points to the latest production deploy),
+// NOT a per-deployment hash URL — hash URLs freeze to one build (so new backend
+// features like the social badge silently disappear) and are gated behind Vercel
+// SSO. This alias is public and always current.
+const TM_PROD_API = "https://testimonials-kappa-sable.vercel.app/api/testimonials";
 const TESTIMONIAL_API = (
   location.hostname.endsWith(".test") ||
   location.hostname === "localhost" ||
