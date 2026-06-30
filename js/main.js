@@ -1025,12 +1025,77 @@ function buildResumePDF() {
   img.src = "images/dedalb.jpg";
 }
 
+// Résumé download is owner-only: clicking the button opens a sign-in gate that
+// verifies the credentials against the Laravel backend before the PDF is built.
 const resumeBtn = document.getElementById("resumeBtn");
-if (resumeBtn) {
-  resumeBtn.addEventListener("click", (e) => {
+const resumeGate = document.getElementById("resumeGate");
+if (resumeBtn && resumeGate) {
+  const RESUME_API_BASE = (
+    location.hostname.endsWith(".test") ||
+    location.hostname === "localhost" ||
+    location.hostname === "127.0.0.1"
+  ) ? "http://testimonials-api.test/api" : "https://testimonials-kappa-sable.vercel.app/api";
+  const RESUME_VERIFY_API = `${RESUME_API_BASE}/resume/verify`;
+
+  const gateForm = document.getElementById("gateForm");
+  const gateStatus = document.getElementById("gateStatus");
+  const gateClose = document.getElementById("gateClose");
+  const gateSubmit = gateForm.querySelector(".gate__submit");
+  const emailInput = gateForm.querySelector('input[name="email"]');
+
+  const setGateStatus = (msg, kind) => {
+    gateStatus.textContent = msg || "";
+    gateStatus.classList.toggle("is-ok", kind === "ok");
+    gateStatus.classList.toggle("is-err", kind === "err");
+  };
+
+  const openGate = () => {
+    resumeGate.classList.add("is-open");
+    resumeGate.setAttribute("aria-hidden", "false");
+    setGateStatus("", null);
+    setTimeout(() => emailInput?.focus(), 60);
+  };
+  const closeGate = () => {
+    resumeGate.classList.remove("is-open");
+    resumeGate.setAttribute("aria-hidden", "true");
+  };
+
+  resumeBtn.addEventListener("click", (e) => { e.preventDefault(); playTick(); openGate(); });
+  gateClose.addEventListener("click", () => { playTick(); closeGate(); });
+  resumeGate.querySelector("[data-gate-close]").addEventListener("click", closeGate);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && resumeGate.classList.contains("is-open")) closeGate();
+  });
+
+  gateForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    playTick();
-    buildResumePDF();
+    const email = emailInput.value.trim();
+    const password = gateForm.querySelector('input[name="password"]').value;
+    if (!email || !password) { setGateStatus("Enter your email and password.", "err"); return; }
+
+    gateSubmit.disabled = true;
+    setGateStatus("Verifying…", null);
+    try {
+      const res = await fetch(RESUME_VERIFY_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      if (res.ok) {
+        setGateStatus("Access granted — preparing your PDF…", "ok");
+        buildResumePDF();
+        setTimeout(() => { closeGate(); gateForm.reset(); setGateStatus("", null); }, 1200);
+      } else if (res.status === 429) {
+        setGateStatus("Too many attempts. Please wait a minute and try again.", "err");
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setGateStatus(data.message || "Incorrect email or password.", "err");
+      }
+    } catch (err) {
+      setGateStatus("Network error. Check your connection and try again.", "err");
+    } finally {
+      gateSubmit.disabled = false;
+    }
   });
 }
 
