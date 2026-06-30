@@ -892,6 +892,10 @@ function buildResumePDF() {
   const role = q(".resume__role")?.textContent.trim() || "Full-Stack Developer";
   const contacts = qa(".resume__contact li").map((li) => li.textContent.trim());
 
+  // Profile photo (top-left of the header). Loaded async below; null until ready.
+  let photoData = null;       // JPEG data URL
+  let photoAspect = 1;        // width / height
+
   // Render the whole résumé at scale S. When draw is false we only advance y
   // (a measuring pass), so we can pick the largest S that still fits one page.
   const render = (S, draw) => {
@@ -900,16 +904,26 @@ function buildResumePDF() {
     const t = draw ? (txt, x, yy, opt) => doc.text(txt, x, yy, opt) : () => {};
     const line = draw ? (x1, yy1, x2, yy2) => doc.line(x1, yy1, x2, yy2) : () => {};
 
-    // ---- header (name, role, contact) ----
+    // ---- header (photo top-left, name + role beside it, contacts right) ----
+    let headX = M;            // x where the name/role text starts
+    let photoBottom = y;
+    if (photoData) {
+      const ph = 80 * S;
+      const pw = ph * photoAspect;
+      if (draw) doc.addImage(photoData, "JPEG", M, y, pw, ph);
+      headX = M + pw + 16 * S;
+      photoBottom = y + ph;
+    }
     doc.setTextColor(...INK);
     doc.setFont("times", "bold"); doc.setFontSize(24 * S);
-    t(name, M, y + 4 * S);
+    t(name, headX, y + (photoData ? 34 : 4) * S);
     doc.setFont("helvetica", "normal"); doc.setFontSize(9.5 * S); doc.setTextColor(...MUTED);
-    t(role.toUpperCase(), M, y + 21 * S, { charSpace: 1.5 });
+    t(role.toUpperCase(), headX, y + (photoData ? 51 : 21) * S, { charSpace: 1.5 });
     contacts.forEach((c, i) => t(c, RIGHT, y + 4 * S + i * 12.5 * S, { align: "right" }));
-    y += Math.max(30 * S, 4 * S + contacts.length * 12.5 * S);
+    const textBottom = y + Math.max((photoData ? 56 : 30) * S, 4 * S + contacts.length * 12.5 * S);
+    y = Math.max(photoBottom, textBottom);
     doc.setDrawColor(210, 205, 196); doc.setLineWidth(0.6); line(M, y, RIGHT, y);
-    y += 20 * S;
+    y += 18 * S;
 
     // ---- shared renderers ----
     const heading = (title) => {
@@ -982,13 +996,33 @@ function buildResumePDF() {
     return y;   // total height consumed
   };
 
-  // Measure, then shrink just enough to fit on a single page.
-  const limit = PAGE_H - M;
-  let S = 1;
-  while (S > 0.6 && render(S, false) > limit) S -= 0.02;
+  // Measure (auto-fit), then draw at the largest scale that fits one page.
+  const finish = () => {
+    const limit = PAGE_H - M;
+    let S = 1;
+    while (S > 0.6 && render(S, false) > limit) S -= 0.02;
+    render(S, true);
+    doc.save("Boyet-Resume.pdf");
+  };
 
-  render(S, true);
-  doc.save("Boyet-Resume.pdf");
+  // Load the profile photo first, then build. If it fails, build without it.
+  const img = new Image();
+  img.onload = () => {
+    try {
+      const maxPx = 700;   // downscale so the embedded photo stays light
+      const sc = Math.min(1, maxPx / Math.max(img.naturalWidth, img.naturalHeight));
+      const cw = Math.round(img.naturalWidth * sc);
+      const ch = Math.round(img.naturalHeight * sc);
+      const c = document.createElement("canvas");
+      c.width = cw; c.height = ch;
+      c.getContext("2d").drawImage(img, 0, 0, cw, ch);
+      photoData = c.toDataURL("image/jpeg", 0.9);
+      photoAspect = img.naturalWidth / img.naturalHeight;
+    } catch (e) { photoData = null; }
+    finish();
+  };
+  img.onerror = () => { photoData = null; finish(); };
+  img.src = "images/dedalb.jpg";
 }
 
 const resumeBtn = document.getElementById("resumeBtn");

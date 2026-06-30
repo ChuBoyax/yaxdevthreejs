@@ -570,7 +570,7 @@ section { padding: clamp(4.5rem, 5vw, 5rem) clamp(1.5rem, 4vw, 4rem); scroll-mar
 .studio__main { max-width: min(620px, 60%); }
 .studio__portrait {
   position: absolute; top: 0; right: 0; bottom: 0;
-  width: clamp(38%, 44vw, 50%);
+  width: clamp(30%, 36vw, 42%);
   margin: 0; z-index: 1; pointer-events: none;
   /* soft drop shadow so the cut-out figure grounds onto the page */
   filter: drop-shadow(-12px 20px 26px rgba(0, 0, 0, 0.32));
