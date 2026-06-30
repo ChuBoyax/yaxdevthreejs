@@ -880,105 +880,114 @@ function buildResumePDF() {
   const doc = new JsPDF({ unit: "pt", format: "a4" });
   const PAGE_W = doc.internal.pageSize.getWidth();
   const PAGE_H = doc.internal.pageSize.getHeight();
-  const M = 48;                    // page margin
-  const LH = 13;                   // base line height (compact, fits one page)
+  const M = 46;                    // page margin
   const RIGHT = PAGE_W - M;
   const INK = [22, 20, 15];
   const MUTED = [120, 115, 105];
-  let y = M;
-
-  const ensure = (needed) => { if (y + needed > PAGE_H - M) { doc.addPage(); y = M; } };
-  const rule = () => { doc.setDrawColor(210, 205, 196); doc.setLineWidth(0.6); doc.line(M, y, RIGHT, y); };
 
   const q = (sel, root = document) => root.querySelector(sel);
   const qa = (sel, root = document) => [...root.querySelectorAll(sel)];
 
-  // ---- header (name, role, contact) ----
   const name = q(".resume__name")?.textContent.trim() || "Boyet A. Dedal";
   const role = q(".resume__role")?.textContent.trim() || "Full-Stack Developer";
   const contacts = qa(".resume__contact li").map((li) => li.textContent.trim());
 
-  doc.setTextColor(...INK);
-  doc.setFont("times", "bold"); doc.setFontSize(24);
-  doc.text(name, M, y + 4);
-  doc.setFont("helvetica", "normal"); doc.setFontSize(9.5); doc.setTextColor(...MUTED);
-  doc.text(role.toUpperCase(), M, y + 21, { charSpace: 1.5 });
-  contacts.forEach((c, i) => doc.text(c, RIGHT, y + 4 + i * 12.5, { align: "right" }));
-  y += Math.max(30, 4 + contacts.length * 12.5); rule(); y += 20;
+  // Render the whole résumé at scale S. When draw is false we only advance y
+  // (a measuring pass), so we can pick the largest S that still fits one page.
+  const render = (S, draw) => {
+    let y = M;
+    const LH = 13 * S;             // base line height
+    const t = draw ? (txt, x, yy, opt) => doc.text(txt, x, yy, opt) : () => {};
+    const line = draw ? (x1, yy1, x2, yy2) => doc.line(x1, yy1, x2, yy2) : () => {};
 
-  // ---- shared renderers ----
-  const heading = (title) => {
-    ensure(22);
-    doc.setFont("helvetica", "bold"); doc.setFontSize(8.5); doc.setTextColor(...MUTED);
-    doc.text(title.toUpperCase(), M, y, { charSpace: 1.2 });
-    y += 6;
-    doc.setDrawColor(220, 215, 206); doc.setLineWidth(0.5); doc.line(M, y, RIGHT, y);
-    y += 15;
-  };
-  const paragraph = (txt) => {
-    const lines = doc.splitTextToSize(txt, RIGHT - M);
-    ensure(lines.length * LH);
-    doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(...INK);
-    doc.text(lines, M, y); y += lines.length * LH + 7;
-  };
-  const bullet = (txt) => {
-    const lines = doc.splitTextToSize(txt, RIGHT - M - 13);
-    ensure(lines.length * LH);
-    doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(...INK);
-    doc.text("•", M, y);
-    doc.text(lines, M + 13, y); y += lines.length * LH + 3;
-  };
+    // ---- header (name, role, contact) ----
+    doc.setTextColor(...INK);
+    doc.setFont("times", "bold"); doc.setFontSize(24 * S);
+    t(name, M, y + 4 * S);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(9.5 * S); doc.setTextColor(...MUTED);
+    t(role.toUpperCase(), M, y + 21 * S, { charSpace: 1.5 });
+    contacts.forEach((c, i) => t(c, RIGHT, y + 4 * S + i * 12.5 * S, { align: "right" }));
+    y += Math.max(30 * S, 4 * S + contacts.length * 12.5 * S);
+    doc.setDrawColor(210, 205, 196); doc.setLineWidth(0.6); line(M, y, RIGHT, y);
+    y += 20 * S;
 
-  // ---- iterate résumé sections (stays in sync with the page) ----
-  qa(".resume__doc .resume__section").forEach((sec) => {
-    heading(q(".resume__label", sec)?.textContent.trim() || "");
+    // ---- shared renderers ----
+    const heading = (title) => {
+      doc.setFont("helvetica", "bold"); doc.setFontSize(8.5 * S); doc.setTextColor(...MUTED);
+      t(title.toUpperCase(), M, y, { charSpace: 1.2 });
+      y += 6 * S;
+      doc.setDrawColor(220, 215, 206); doc.setLineWidth(0.5); line(M, y, RIGHT, y);
+      y += 15 * S;
+    };
+    const paragraph = (txt) => {
+      const lines = doc.splitTextToSize(txt, RIGHT - M);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(10 * S); doc.setTextColor(...INK);
+      t(lines, M, y); y += lines.length * LH + 7 * S;
+    };
+    const bullet = (txt) => {
+      const lines = doc.splitTextToSize(txt, RIGHT - M - 13 * S);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(10 * S); doc.setTextColor(...INK);
+      t("•", M, y);
+      t(lines, M + 13 * S, y); y += lines.length * LH + 3 * S;
+    };
 
-    const text = q(".resume__text", sec);
-    if (text) paragraph(text.textContent.trim());
+    qa(".resume__doc .resume__section").forEach((sec) => {
+      heading(q(".resume__label", sec)?.textContent.trim() || "");
 
-    qa(".resume__skills li", sec).forEach((li) => {
-      const cat = q(".resume__skill-cat", li)?.textContent.trim() || "";
-      const val = q(".resume__skill-val", li)?.textContent.trim() || "";
-      const valLines = doc.splitTextToSize(val, RIGHT - M - 130);
-      ensure(Math.max(LH, valLines.length * LH));
-      doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(...INK);
-      doc.text(cat, M, y);
-      doc.setFont("helvetica", "normal"); doc.setTextColor(...INK);
-      doc.text(valLines, M + 130, y);
-      y += Math.max(LH, valLines.length * LH) + 3;
+      const text = q(".resume__text", sec);
+      if (text) paragraph(text.textContent.trim());
+
+      qa(".resume__skills li", sec).forEach((li) => {
+        const cat = q(".resume__skill-cat", li)?.textContent.trim() || "";
+        const val = q(".resume__skill-val", li)?.textContent.trim() || "";
+        doc.setFont("helvetica", "normal"); doc.setFontSize(10 * S);
+        const valLines = doc.splitTextToSize(val, RIGHT - M - 130 * S);
+        doc.setFont("helvetica", "bold"); doc.setTextColor(...INK);
+        t(cat, M, y);
+        doc.setFont("helvetica", "normal"); doc.setTextColor(...INK);
+        t(valLines, M + 130 * S, y);
+        y += Math.max(LH, valLines.length * LH) + 3 * S;
+      });
+
+      qa(".resume__plist li", sec).forEach((li) => {
+        const pn = q(".resume__pname", li)?.textContent.trim() || "";
+        const pd = q(".resume__pdesc", li)?.textContent.trim() || "";
+        bullet(pd ? `${pn} — ${pd}` : pn);
+      });
+
+      qa(".resume__entry", sec).forEach((en) => {
+        const tt = q(".resume__entry-title", en)?.textContent.trim() || "";
+        const d = q(".resume__entry-date", en)?.textContent.trim() || "";
+        const sub = q(".resume__entry-sub", en)?.textContent.trim() || "";
+        const bl = qa(".resume__bullets li", en).map((li) => li.textContent.trim());
+        doc.setFont("times", "bold"); doc.setFontSize(12 * S); doc.setTextColor(...INK);
+        const tLines = doc.splitTextToSize(tt, RIGHT - M - 110 * S);
+        t(tLines, M, y);
+        doc.setFont("helvetica", "normal"); doc.setFontSize(9 * S); doc.setTextColor(...MUTED);
+        t(d, RIGHT, y, { align: "right" });
+        y += tLines.length * LH + 3 * S;
+        if (sub) { doc.setFontSize(9.5 * S); doc.setTextColor(...MUTED); t(sub, M, y); y += LH; }
+        bl.forEach(bullet);
+        y += 8 * S;
+      });
+
+      // loose bullets (e.g. Certifications) — only those not inside an entry
+      if (!q(".resume__entry", sec)) {
+        qa(".resume__bullets li", sec).forEach((li) => bullet(li.textContent.trim()));
+      }
+
+      y += 6 * S;
     });
 
-    qa(".resume__plist li", sec).forEach((li) => {
-      const pn = q(".resume__pname", li)?.textContent.trim() || "";
-      const pd = q(".resume__pdesc", li)?.textContent.trim() || "";
-      bullet(pd ? `${pn} — ${pd}` : pn);
-    });
+    return y;   // total height consumed
+  };
 
-    qa(".resume__entry", sec).forEach((en) => {
-      const t = q(".resume__entry-title", en)?.textContent.trim() || "";
-      const d = q(".resume__entry-date", en)?.textContent.trim() || "";
-      const sub = q(".resume__entry-sub", en)?.textContent.trim() || "";
-      const bl = qa(".resume__bullets li", en).map((li) => li.textContent.trim());
-      const tLines = doc.splitTextToSize(t, RIGHT - M - 110);
-      ensure(tLines.length * LH + 14 + bl.length * LH + 8);
-      doc.setFont("times", "bold"); doc.setFontSize(12); doc.setTextColor(...INK);
-      doc.text(tLines, M, y);
-      doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(...MUTED);
-      doc.text(d, RIGHT, y, { align: "right" });
-      y += tLines.length * LH + 3;
-      if (sub) { doc.setFontSize(9.5); doc.setTextColor(...MUTED); doc.text(sub, M, y); y += LH; }
-      bl.forEach(bullet);
-      y += 8;
-    });
+  // Measure, then shrink just enough to fit on a single page.
+  const limit = PAGE_H - M;
+  let S = 1;
+  while (S > 0.6 && render(S, false) > limit) S -= 0.02;
 
-    // loose bullets (e.g. Certifications) — only those not inside an entry
-    if (!q(".resume__entry", sec)) {
-      qa(".resume__bullets li", sec).forEach((li) => bullet(li.textContent.trim()));
-    }
-
-    y += 6;
-  });
-
+  render(S, true);
   doc.save("Boyet-Resume.pdf");
 }
 
