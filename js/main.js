@@ -880,7 +880,8 @@ function buildResumePDF() {
   const doc = new JsPDF({ unit: "pt", format: "a4" });
   const PAGE_W = doc.internal.pageSize.getWidth();
   const PAGE_H = doc.internal.pageSize.getHeight();
-  const M = 50;                    // page margin
+  const M = 42;                    // page margin
+  const LH = 11.5;                 // base line height (compact, fits one page)
   const RIGHT = PAGE_W - M;
   const INK = [22, 20, 15];
   const MUTED = [120, 115, 105];
@@ -898,34 +899,34 @@ function buildResumePDF() {
   const contacts = qa(".resume__contact li").map((li) => li.textContent.trim());
 
   doc.setTextColor(...INK);
-  doc.setFont("times", "bold"); doc.setFontSize(26);
+  doc.setFont("times", "bold"); doc.setFontSize(21);
   doc.text(name, M, y + 4);
-  doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(...MUTED);
-  doc.text(role.toUpperCase(), M, y + 22, { charSpace: 1.5 });
-  contacts.forEach((c, i) => doc.text(c, RIGHT, y + 4 + i * 13, { align: "right" }));
-  y += Math.max(30, 4 + contacts.length * 13); rule(); y += 22;
+  doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(...MUTED);
+  doc.text(role.toUpperCase(), M, y + 19, { charSpace: 1.5 });
+  contacts.forEach((c, i) => doc.text(c, RIGHT, y + 4 + i * 11, { align: "right" }));
+  y += Math.max(26, 4 + contacts.length * 11); rule(); y += 16;
 
   // ---- shared renderers ----
   const heading = (title) => {
-    ensure(28);
-    doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(...MUTED);
+    ensure(22);
+    doc.setFont("helvetica", "bold"); doc.setFontSize(8.5); doc.setTextColor(...MUTED);
     doc.text(title.toUpperCase(), M, y, { charSpace: 1.2 });
-    y += 6;
+    y += 5;
     doc.setDrawColor(220, 215, 206); doc.setLineWidth(0.5); doc.line(M, y, RIGHT, y);
-    y += 16;
+    y += 12;
   };
   const paragraph = (txt) => {
     const lines = doc.splitTextToSize(txt, RIGHT - M);
-    ensure(lines.length * 14);
-    doc.setFont("helvetica", "normal"); doc.setFontSize(10.5); doc.setTextColor(...INK);
-    doc.text(lines, M, y); y += lines.length * 14 + 8;
+    ensure(lines.length * LH);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(9.5); doc.setTextColor(...INK);
+    doc.text(lines, M, y); y += lines.length * LH + 5;
   };
   const bullet = (txt) => {
-    const lines = doc.splitTextToSize(txt, RIGHT - M - 14);
-    ensure(lines.length * 14);
-    doc.setFont("helvetica", "normal"); doc.setFontSize(10.5); doc.setTextColor(...INK);
+    const lines = doc.splitTextToSize(txt, RIGHT - M - 12);
+    ensure(lines.length * LH);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(9.5); doc.setTextColor(...INK);
     doc.text("•", M, y);
-    doc.text(lines, M + 14, y); y += lines.length * 14 + 3;
+    doc.text(lines, M + 12, y); y += lines.length * LH + 2;
   };
 
   // ---- iterate résumé sections (stays in sync with the page) ----
@@ -939,12 +940,12 @@ function buildResumePDF() {
       const cat = q(".resume__skill-cat", li)?.textContent.trim() || "";
       const val = q(".resume__skill-val", li)?.textContent.trim() || "";
       const valLines = doc.splitTextToSize(val, RIGHT - M - 130);
-      ensure(Math.max(14, valLines.length * 14));
-      doc.setFont("helvetica", "bold"); doc.setFontSize(10.5); doc.setTextColor(...INK);
+      ensure(Math.max(LH, valLines.length * LH));
+      doc.setFont("helvetica", "bold"); doc.setFontSize(9.5); doc.setTextColor(...INK);
       doc.text(cat, M, y);
       doc.setFont("helvetica", "normal"); doc.setTextColor(...INK);
       doc.text(valLines, M + 130, y);
-      y += Math.max(14, valLines.length * 14) + 3;
+      y += Math.max(LH, valLines.length * LH) + 2;
     });
 
     qa(".resume__plist li", sec).forEach((li) => {
@@ -959,15 +960,15 @@ function buildResumePDF() {
       const sub = q(".resume__entry-sub", en)?.textContent.trim() || "";
       const bl = qa(".resume__bullets li", en).map((li) => li.textContent.trim());
       const tLines = doc.splitTextToSize(t, RIGHT - M - 110);
-      ensure(tLines.length * 14 + 16 + bl.length * 14 + 10);
-      doc.setFont("times", "bold"); doc.setFontSize(12); doc.setTextColor(...INK);
+      ensure(tLines.length * LH + 14 + bl.length * LH + 8);
+      doc.setFont("times", "bold"); doc.setFontSize(11); doc.setTextColor(...INK);
       doc.text(tLines, M, y);
-      doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(...MUTED);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); doc.setTextColor(...MUTED);
       doc.text(d, RIGHT, y, { align: "right" });
-      y += tLines.length * 14;
-      if (sub) { doc.setFontSize(10); doc.setTextColor(...MUTED); doc.text(sub, M, y); y += 14; }
+      y += tLines.length * LH + 2;
+      if (sub) { doc.setFontSize(9); doc.setTextColor(...MUTED); doc.text(sub, M, y); y += LH; }
       bl.forEach(bullet);
-      y += 8;
+      y += 5;
     });
 
     // loose bullets (e.g. Certifications) — only those not inside an entry
@@ -975,7 +976,7 @@ function buildResumePDF() {
       qa(".resume__bullets li", sec).forEach((li) => bullet(li.textContent.trim()));
     }
 
-    y += 6;
+    y += 3;
   });
 
   doc.save("Boyet-Resume.pdf");
