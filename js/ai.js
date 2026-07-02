@@ -130,6 +130,7 @@ function trackPayload(bump) {
     visits: mem.visits,
     sections: mem.sections,
     last_section: mem.lastSection,
+    place: (mem.location && mem.location.place) || null,
     theme: document.documentElement.dataset.theme || null,
     referrer: (document.referrer || "").slice(0, 255) || null,
     language: navigator.language || null,
@@ -148,9 +149,15 @@ function pingServer(bump = false) {
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         // the API echoes the visitor's IP-based location (Vercel geo headers)
+        // plus any place they stated in an earlier chat
         const loc = data && data.location;
-        if (loc && (loc.city || loc.country)) {
-          mem.location = { city: loc.city || null, region: loc.region || null, country: loc.country || null };
+        if (loc && (loc.city || loc.country || loc.place)) {
+          mem.location = {
+            city: loc.city || null,
+            region: loc.region || null,
+            country: loc.country || null,
+            place: (mem.location && mem.location.place) || loc.place || null,
+          };
           saveMemory();
         }
       })
@@ -168,20 +175,45 @@ function countryName(code) {
   try { return new Intl.DisplayNames(["en"], { type: "region" }).of(code) || code; }
   catch (e) { return code; }
 }
-// { place, flag, isPH } for greetings — falls back to the timezone when the
-// API hasn't resolved a location (e.g. local dev, offline)
+// { place, flag, isPH, stated, fuzzy } for greetings.
+// stated = the visitor told us themselves (most accurate).
+// fuzzy = IP-derived city — points at the ISP hub, not their actual town
+// (e.g. Leyte connections often resolve to "Lahug" in Cebu City), so
+// greetings phrase it as an honest guess and invite a correction.
+// Falls back to the timezone when nothing has resolved (local dev, offline).
 function locationBits() {
   const loc = mem.location || {};
+  if (loc.place) {
+    return { place: loc.place, flag: countryFlag(loc.country) || "🇵🇭", isPH: (loc.country || "PH") === "PH", stated: true, fuzzy: false };
+  }
   if (loc.city || loc.country) {
     const isPH = loc.country === "PH";
     const cname = loc.country ? countryName(loc.country) : "";
     const place = loc.city ? (isPH ? loc.city : `${loc.city}, ${cname}`) : (isPH ? "Pilipinas" : cname);
-    return { place, flag: countryFlag(loc.country) || "🌏", isPH };
+    return { place, flag: countryFlag(loc.country) || "🌏", isPH, stated: false, fuzzy: !!loc.city };
   }
   let tz = null;
   try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) {}
-  if (tz === "Asia/Manila") return { place: "Pilipinas", flag: "🇵🇭", isPH: true };
+  if (tz === "Asia/Manila") return { place: "Pilipinas", flag: "🇵🇭", isPH: true, stated: false, fuzzy: false };
   return null;
+}
+
+// "taga-Hilongos, Leyte ako" / "i'm from Cebu City" → the visitor's own words
+function parseStatedPlace(raw) {
+  if (raw.includes("?")) return null;
+  const m =
+    raw.match(/taga[-\s]+(.{2,60}?)\s*(?:po)?\s*(?:ako|kami)?\s*[.!]*$/i) ||
+    raw.match(/^(?:i'?m|i am)\s+from\s+(.{2,60}?)\s*[.!]*$/i) ||
+    raw.match(/^(?:nasa|dito (?:ako )?sa|galing (?:ako )?sa|i live in|greetings from|from)\s+(.{2,60}?)\s*(?:po)?\s*(?:ako|kami)?\s*[.!]*$/i);
+  if (!m) return null;
+  const place = m[1].trim().replace(/[.!]+$/, "").trim();
+  if (!/^[\p{L}][\p{L}\p{N} ,.'-]{1,60}$/u.test(place)) return null;
+  return cap(place);
+}
+function setStatedPlace(place) {
+  mem.location = { ...(mem.location || {}), place };
+  saveMemory();
+  pingServer(false);
 }
 
 // final snapshot on leave so the sections they explored get saved
@@ -347,8 +379,10 @@ teaser.addEventListener("click", () => setPanel(true));
 setTimeout(() => {
   if (panelOpen) return;
   const lb = locationBits();
-  if (isReturning && mem.name) showTeaser(`Welcome back, ${mem.name}! ✦`);
+  if (isReturning && mem.name && lb && lb.stated) showTeaser(`Kumusta, ${mem.name}! Musta diyan sa ${lb.place}? ✦`);
+  else if (isReturning && mem.name) showTeaser(`Welcome back, ${mem.name}! ✦`);
   else if (isReturning) showTeaser("Welcome back! I remember you ✦");
+  else if (lb && lb.fuzzy && lb.isPH) showTeaser(`Kumusta diyan sa may bandang ${lb.place}! ✦`);
   else if (lb && lb.isPH) showTeaser(`Kumusta diyan sa ${lb.place}! ✦`);
   else if (lb) showTeaser(`Hello from the Philippines to ${lb.place}! ✦`);
   else showTeaser("Hi! First time here? — Yax AI ✦");
@@ -368,11 +402,18 @@ let awaitingName = !mem.name;
 
 function greet() {
   const lb = locationBits();
-  const locLine = lb
-    ? (lb.isPH
-      ? `Kumusta diyan sa <strong>${esc(lb.place)}</strong>! ${lb.flag}`
-      : `Hello all the way to <strong>${esc(lb.place)}</strong>! ${lb.flag} Greetings from the Philippines 🇵🇭`)
-    : null;
+  let locLine = null;
+  if (lb && lb.stated) {
+    locLine = `Kumusta diyan sa <strong>${esc(lb.place)}</strong>! ${lb.flag}`;
+  } else if (lb && lb.fuzzy && lb.isPH) {
+    locLine = `Sabi ng koneksyon mo bandang <strong>${esc(lb.place)}</strong> ka daw ${lb.flag} — pero alam kong minsan mali 'yan (hub lang ng ISP mo 'yon). Kung mali, sabihin mo lang, hal. “taga-Ormoc ako”, at tatandaan ko. 😊`;
+  } else if (lb && lb.fuzzy) {
+    locLine = `Looks like you're visiting from around <strong>${esc(lb.place)}</strong> ${lb.flag} — if that's off, just tell me where you're really from (“I'm from Sydney”) and I'll remember. 🙂 Greetings from the Philippines 🇵🇭`;
+  } else if (lb && lb.isPH) {
+    locLine = `Kumusta diyan sa <strong>${esc(lb.place)}</strong>! ${lb.flag}`;
+  } else if (lb) {
+    locLine = `Hello all the way to <strong>${esc(lb.place)}</strong>! ${lb.flag} Greetings from the Philippines 🇵🇭`;
+  }
 
   if (isReturning && mem.name) {
     const parts = [
@@ -402,9 +443,7 @@ function greet() {
     const parts = [
       "Hey! I'm <strong>Yax AI</strong> ✦ — Boyet's portfolio assistant. First time here, right? I remember my visitors, kaya next time kilala na kita. 😊",
     ];
-    if (lb) parts.push(lb.isPH
-      ? `Nakita ko rin na bumibisita ka mula sa <strong>${esc(lb.place)}</strong> ${lb.flag} — kumusta diyan!`
-      : `And you're visiting all the way from <strong>${esc(lb.place)}</strong> ${lb.flag} — hello from the Philippines! 🇵🇭`);
+    if (locLine) parts.push(locLine);
     parts.push("What should I call you? (Or just ask me anything — type “skip” kung ayaw mo.)");
     reply(parts);
     awaitingName = true;
@@ -436,6 +475,15 @@ function brain(raw) {
       awaitingName = false;
       return { texts: ["No worries! 🙂 Ask me anything about Boyet — his projects, skills, or how to reach him."], chips: DEFAULT_CHIPS };
     }
+    // "taga-Hilongos, Leyte ako" while being asked for a name → it's a place, not a name
+    const placeWhileNaming = parseStatedPlace(raw);
+    if (placeWhileNaming) {
+      setStatedPlace(placeWhileNaming);
+      return { texts: [
+        `Ah, taga-<strong>${esc(placeWhileNaming)}</strong> ka pala! 📍 Tatandaan ko 'yan.`,
+        "Pero di mo pa rin nasasabi — what should I call you? 😄",
+      ] };
+    }
     const m = raw.match(/(?:call me|my name is|i am|i'm|ako si|ako'y)\s+(.{2,40})$/i);
     const candidate = (m ? m[1] : raw).replace(/[.!]+$/, "").trim();
     if (looksLikeName(candidate)) {
@@ -466,13 +514,25 @@ function brain(raw) {
     setName(cap(rename[1].replace(/[.!]+$/, "").trim()));
     return { texts: [`Got it, <strong>${esc(mem.name)}</strong>! Updated ang memory ko. ✍️`], chips: DEFAULT_CHIPS };
   }
+  {
+    const stated = parseStatedPlace(raw);
+    if (stated) {
+      setStatedPlace(stated);
+      return {
+        texts: [`Ah, taga-<strong>${esc(stated)}</strong> ka pala! 📍 Tatandaan ko 'yan — sa susunod, “Kumusta diyan sa ${esc(stated)}!” na agad ang bati ko. 😄`],
+        chips: DEFAULT_CHIPS,
+      };
+    }
+  }
   if (/how.*(know|alam).*(where|location|city|place|saan)|paano mo (na)?alam|where am i|saan ako|nasaan ako|creepy|stalk/i.test(q)) {
     const lb = locationBits();
     return {
       texts: [
-        lb
-          ? `Your internet connection waves hi from around <strong>${esc(lb.place)}</strong> ${lb.flag} — IP-based approximation lang 'yan, city-level at best. 🙂`
-          : "Honestly? Wala akong makita — your location isn't resolving right now, so you're a mystery to me. 🕵️",
+        lb && lb.stated
+          ? `Ikaw mismo ang nagsabi — taga-<strong>${esc(lb.place)}</strong> ka. 😄 'Yon lang ang tinatandaan ko.`
+          : lb
+            ? `Your internet connection waves hi from around <strong>${esc(lb.place)}</strong> ${lb.flag} — IP-based approximation lang 'yan (madalas hub ng ISP ang lumalabas, hindi ang totoong bayan mo). Kung mali, sabihin mo lang: “taga-Ormoc ako”. 🙂`
+            : "Honestly? Wala akong makita — your location isn't resolving right now, so you're a mystery to me. 🕵️",
         "No GPS, no tracking scripts — just the rough region your connection suggests. Say “forget me” anytime and I drop everything I know about you.",
       ],
       chips: DEFAULT_CHIPS,
@@ -490,7 +550,7 @@ function brain(raw) {
     const lines = [
       `Here's what I remember about you${mem.name ? `, <strong>${esc(mem.name)}</strong>` : ""}: 🧠`,
       `• Visits: <strong>${mem.visits}</strong> — first dropped by ${timeAgo(mem.firstVisit)}<br>` +
-      (lb ? `• Visiting from: ${esc(lb.place)} ${lb.flag}<br>` : "") +
+      (lb ? `• Visiting from: ${esc(lb.place)} ${lb.flag}${lb.stated ? "" : " (approx.)"}<br>` : "") +
       (seen ? `• Sections explored: ${esc(seen)}<br>` : "") +
       `• We've exchanged ${mem.chats} message${mem.chats === 1 ? "" : "s"}`,
       "All of it stays in your browser — say “forget me” anytime and it's gone. 🤞",
