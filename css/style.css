@@ -472,6 +472,13 @@ section { padding: clamp(4.5rem, 5vw, 5rem) clamp(1.5rem, 4vw, 4rem); scroll-mar
   margin-right: calc(-1 * clamp(1.5rem, 4vw, 4rem));
   margin-bottom: calc(-1 * clamp(4.5rem, 5vw, 5rem));
 }
+.hero__greet {
+  font-family: var(--serif); font-style: italic;
+  font-size: clamp(1.15rem, 2.4vw, 1.6rem);
+  color: var(--accent);
+  margin-bottom: .9rem;
+}
+.hero__greet:empty { display: none; }
 .eyebrow { font-size: .8rem; text-transform: uppercase; letter-spacing: .15em; color: var(--muted); margin-bottom: 2rem; }
 .hero__title {
   font-family: var(--serif); font-weight: 400;
