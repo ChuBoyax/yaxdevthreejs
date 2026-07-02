@@ -76,6 +76,7 @@ mem = loadMemory() || {
   lastVisit: null,     // timestamp of the PREVIOUS visit (for "3 days ago")
   sections: {},
   lastSection: null,
+  location: null,      // { city, region, country } — echoed back by the API (IP-based)
   chats: 0,
 };
 
@@ -143,10 +144,45 @@ function pingServer(bump = false) {
       headers: { "Content-Type": "application/json", "Accept": "application/json" },
       body: JSON.stringify(trackPayload(bump)),
       keepalive: true,
-    }).catch(() => {});
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        // the API echoes the visitor's IP-based location (Vercel geo headers)
+        const loc = data && data.location;
+        if (loc && (loc.city || loc.country)) {
+          mem.location = { city: loc.city || null, region: loc.region || null, country: loc.country || null };
+          saveMemory();
+        }
+      })
+      .catch(() => {});
   } catch (e) { /* offline / blocked — memory still works locally */ }
 }
 pingServer(isNewSession);
+
+/* ---------- location (IP-based, city-level approximation) ---------- */
+function countryFlag(code) {
+  if (!code || code.length !== 2) return "";
+  return [...code.toUpperCase()].map((c) => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65)).join("");
+}
+function countryName(code) {
+  try { return new Intl.DisplayNames(["en"], { type: "region" }).of(code) || code; }
+  catch (e) { return code; }
+}
+// { place, flag, isPH } for greetings — falls back to the timezone when the
+// API hasn't resolved a location (e.g. local dev, offline)
+function locationBits() {
+  const loc = mem.location || {};
+  if (loc.city || loc.country) {
+    const isPH = loc.country === "PH";
+    const cname = loc.country ? countryName(loc.country) : "";
+    const place = loc.city ? (isPH ? loc.city : `${loc.city}, ${cname}`) : (isPH ? "Pilipinas" : cname);
+    return { place, flag: countryFlag(loc.country) || "🌏", isPH };
+  }
+  let tz = null;
+  try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) {}
+  if (tz === "Asia/Manila") return { place: "Pilipinas", flag: "🇵🇭", isPH: true };
+  return null;
+}
 
 // final snapshot on leave so the sections they explored get saved
 window.addEventListener("pagehide", () => {
@@ -310,8 +346,11 @@ teaser.addEventListener("click", () => setPanel(true));
 
 setTimeout(() => {
   if (panelOpen) return;
+  const lb = locationBits();
   if (isReturning && mem.name) showTeaser(`Welcome back, ${mem.name}! ✦`);
   else if (isReturning) showTeaser("Welcome back! I remember you ✦");
+  else if (lb && lb.isPH) showTeaser(`Kumusta diyan sa ${lb.place}! ✦`);
+  else if (lb) showTeaser(`Hello from the Philippines to ${lb.place}! ✦`);
   else showTeaser("Hi! First time here? — Yax AI ✦");
 }, 2600);
 
@@ -328,10 +367,18 @@ const DEFAULT_CHIPS = ["Projects", "Skills", "Contact", "Anong alam mo sa'kin?"]
 let awaitingName = !mem.name;
 
 function greet() {
+  const lb = locationBits();
+  const locLine = lb
+    ? (lb.isPH
+      ? `Kumusta diyan sa <strong>${esc(lb.place)}</strong>! ${lb.flag}`
+      : `Hello all the way to <strong>${esc(lb.place)}</strong>! ${lb.flag} Greetings from the Philippines 🇵🇭`)
+    : null;
+
   if (isReturning && mem.name) {
     const parts = [
       `${timeGreet()}, <strong>${esc(mem.name)}</strong>! 👋 Welcome back — visit #${mem.visits} mo na 'to${prevVisitTs ? `, last time was ${timeAgo(prevVisitTs)}` : ""}.`,
     ];
+    if (locLine) parts.push(locLine);
     const fav = favoriteSection();
     if (fav) parts.push(`Mukhang favorite mo ang <strong>${SECTION_LABELS[fav.id] || fav.id}</strong> section — you've opened it ${fav.count}× na. 😄`);
     const unseen = unexploredSections();
@@ -344,16 +391,22 @@ function greet() {
     }
     awaitingName = false;
   } else if (isReturning) {
-    reply([
+    const parts = [
       `Welcome back! 👋 Visit #${mem.visits} mo na 'to${prevVisitTs ? ` — last time was ${timeAgo(prevVisitTs)}` : ""}.`,
-      "I never got your name though. What should I call you? (I'll remember you next time — and Boyet gets to see na dumaan ka. 😊)",
-    ]);
+    ];
+    if (locLine) parts.push(locLine);
+    parts.push("I never got your name though. What should I call you? (I'll remember you next time — and Boyet gets to see na dumaan ka. 😊)");
+    reply(parts);
     awaitingName = true;
   } else {
-    reply([
+    const parts = [
       "Hey! I'm <strong>Yax AI</strong> ✦ — Boyet's portfolio assistant. First time here, right? I remember my visitors, kaya next time kilala na kita. 😊",
-      "What should I call you? (Or just ask me anything — type “skip” kung ayaw mo.)",
-    ]);
+    ];
+    if (lb) parts.push(lb.isPH
+      ? `Nakita ko rin na bumibisita ka mula sa <strong>${esc(lb.place)}</strong> ${lb.flag} — kumusta diyan!`
+      : `And you're visiting all the way from <strong>${esc(lb.place)}</strong> ${lb.flag} — hello from the Philippines! 🇵🇭`);
+    parts.push("What should I call you? (Or just ask me anything — type “skip” kung ayaw mo.)");
+    reply(parts);
     awaitingName = true;
   }
 }
@@ -402,7 +455,7 @@ function brain(raw) {
   /* — memory commands — */
   if (/forget me|forget everything|kalimutan mo ako|delete my (data|memory)|clear memory|burahin/i.test(q)) {
     try { localStorage.removeItem(MEM_KEY); sessionStorage.removeItem(SESSION_FLAG); } catch (e) {}
-    mem = { key: uuid(), name: null, visits: 1, firstVisit: Date.now(), lastVisit: Date.now(), sections: {}, lastSection: null, chats: 0 };
+    mem = { key: uuid(), name: null, visits: 1, firstVisit: Date.now(), lastVisit: Date.now(), sections: {}, lastSection: null, location: null, chats: 0 };
     saveMemory();
     setStatus();
     awaitingName = true;
@@ -413,6 +466,18 @@ function brain(raw) {
     setName(cap(rename[1].replace(/[.!]+$/, "").trim()));
     return { texts: [`Got it, <strong>${esc(mem.name)}</strong>! Updated ang memory ko. ✍️`], chips: DEFAULT_CHIPS };
   }
+  if (/how.*(know|alam).*(where|location|city|place|saan)|paano mo (na)?alam|where am i|saan ako|nasaan ako|creepy|stalk/i.test(q)) {
+    const lb = locationBits();
+    return {
+      texts: [
+        lb
+          ? `Your internet connection waves hi from around <strong>${esc(lb.place)}</strong> ${lb.flag} — IP-based approximation lang 'yan, city-level at best. 🙂`
+          : "Honestly? Wala akong makita — your location isn't resolving right now, so you're a mystery to me. 🕵️",
+        "No GPS, no tracking scripts — just the rough region your connection suggests. Say “forget me” anytime and I drop everything I know about you.",
+      ],
+      chips: DEFAULT_CHIPS,
+    };
+  }
   if (/what do you (know|remember)|remember me|do you know me|anong alam mo|sino ako|kilala mo.*ako/i.test(q)) {
     if (!mem.name && mem.visits <= 1) {
       return { texts: ["Not much yet! This is our first meeting — I only know you're here right now. Tell me your name and I'll remember you next time. 😊"] };
@@ -421,9 +486,11 @@ function brain(raw) {
       .sort((a, b) => b[1] - a[1])
       .map(([id, n]) => `${SECTION_LABELS[id] || id} (${n}×)`)
       .join(", ");
+    const lb = locationBits();
     const lines = [
       `Here's what I remember about you${mem.name ? `, <strong>${esc(mem.name)}</strong>` : ""}: 🧠`,
       `• Visits: <strong>${mem.visits}</strong> — first dropped by ${timeAgo(mem.firstVisit)}<br>` +
+      (lb ? `• Visiting from: ${esc(lb.place)} ${lb.flag}<br>` : "") +
       (seen ? `• Sections explored: ${esc(seen)}<br>` : "") +
       `• We've exchanged ${mem.chats} message${mem.chats === 1 ? "" : "s"}`,
       "All of it stays in your browser — say “forget me” anytime and it's gone. 🤞",
