@@ -14,6 +14,7 @@ const AI_API_BASE = (
   location.hostname === "127.0.0.1"
 ) ? "http://testimonials-api.test/api" : "https://testimonials-kappa-sable.vercel.app/api";
 const TRACK_API = `${AI_API_BASE}/visitors/track`;
+const CHAT_API = `${AI_API_BASE}/yax/chat`;
 
 const MEM_KEY = "yax_ai_memory_v1";
 const SESSION_FLAG = "yax_ai_session";
@@ -343,6 +344,86 @@ const DEFAULT_CHIPS = ["Projects", "Skills", "Contact", "What do you know about 
 
 let awaitingName = !mem.name;
 
+/* Recent turns sent to the AI for context. Kept short to control tokens. */
+const history = [];
+const MAX_HISTORY = 12;
+function pushHistory(role, content) {
+  history.push({ role, content });
+  if (history.length > MAX_HISTORY) history.splice(0, history.length - MAX_HISTORY);
+}
+const stripTags = (h) => String(h).replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+
+/* Intents that MUST run locally — they mutate private memory (name, visits)
+   or read it back precisely — so they never hit the network and stay instant.
+   Returns a reply object, or null to let the real AI handle the message. */
+function localBrain(raw) {
+  const q = raw.trim().toLowerCase();
+
+  /* — name capture flow — */
+  if (awaitingName) {
+    if (/^(skip|no|nope|wag|ayaw|later|secret|pass)\b/.test(q)) {
+      awaitingName = false;
+      return { texts: ["No worries! 🙂 Ask me anything — about Boyet, or really anything at all."], chips: DEFAULT_CHIPS };
+    }
+    const m = raw.match(/(?:call me|my name is|i am|i'm|ako si|ako'y)\s+(.{2,40})$/i);
+    const candidate = (m ? m[1] : raw).replace(/[.!]+$/, "").trim();
+    if (looksLikeName(candidate)) {
+      awaitingName = false;
+      setName(cap(candidate));
+      return {
+        texts: [
+          `Nice to meet you, <strong>${esc(mem.name)}</strong>! 🤝 You're saved in my memory now — when you come back, I'll recognize you.`,
+          "So — what would you like to know? You can ask about Boyet's work, or anything else on your mind.",
+        ],
+        chips: DEFAULT_CHIPS,
+      };
+    }
+    awaitingName = false; // not a name — let the AI answer the actual question
+  }
+
+  /* — forget me — */
+  if (/forget me|forget everything|kalimutan mo ako|kalimti ko|delete my (data|memory)|clear memory|burahin/i.test(q)) {
+    try { localStorage.removeItem(MEM_KEY); sessionStorage.removeItem(SESSION_FLAG); } catch (e) {}
+    mem = { key: uuid(), name: null, visits: 1, firstVisit: Date.now(), lastVisit: Date.now(), sections: {}, lastSection: null, chats: 0 };
+    saveMemory();
+    setStatus();
+    updateHeroGreet();
+    history.length = 0;
+    awaitingName = true;
+    return { texts: ["Done — wiped my memory of you. 🧹 It's like we're meeting for the first time again. What should I call you?"] };
+  }
+
+  /* — rename — */
+  const rename = raw.match(/(?:call me|my name is|ako si|ako'y|change my name to)\s+(.{2,40})$/i);
+  if (rename && looksLikeName(rename[1].replace(/[.!]+$/, "").trim())) {
+    setName(cap(rename[1].replace(/[.!]+$/, "").trim()));
+    return { texts: [`Got it, <strong>${esc(mem.name)}</strong>! I've updated my memory. ✍️`], chips: DEFAULT_CHIPS };
+  }
+
+  /* — what do you remember about me — */
+  if (/what do you (know|remember)|remember me|do you know me|anong alam mo|sino ako|kilala mo.*ako|kabalo ka.*nako/i.test(q)) {
+    if (!mem.name && mem.visits <= 1) {
+      return { texts: ["Not much yet! This is our first meeting — I only know you're here right now. Tell me your name and I'll remember you next time. 😊"] };
+    }
+    const seen = Object.entries(mem.sections)
+      .sort((a, b) => b[1] - a[1])
+      .map(([id, n]) => `${SECTION_LABELS[id] || id} (${n}×)`)
+      .join(", ");
+    return {
+      texts: [
+        `Here's what I remember about you${mem.name ? `, <strong>${esc(mem.name)}</strong>` : ""}: 🧠`,
+        `• Visits: <strong>${mem.visits}</strong> — first dropped by ${timeAgo(mem.firstVisit)}<br>` +
+        (seen ? `• Sections explored: ${esc(seen)}<br>` : "") +
+        `• We've exchanged ${mem.chats} message${mem.chats === 1 ? "" : "s"}`,
+        "All of it stays in your browser — say “forget me” anytime and it's gone. 🤞",
+      ],
+      chips: DEFAULT_CHIPS,
+    };
+  }
+
+  return null; // → hand off to the real AI
+}
+
 function greet() {
   if (isReturning && mem.name) {
     const parts = [
@@ -566,16 +647,57 @@ function brain(raw) {
   };
 }
 
+/* ---------- ask the real AI (with a rule-based offline fallback) ---------- */
+let aiChain = Promise.resolve();
+function askAI(userText) {
+  aiChain = aiChain.then(async () => {
+    showTyping();
+    try {
+      const res = await fetch(CHAT_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({
+          messages: history.slice(-MAX_HISTORY),
+          visitor: { name: mem.name, visits: mem.visits, last_section: mem.lastSection },
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      hideTyping();
+      if (res.ok && data.ok && data.reply) {
+        addMsg(data.reply, "bot");
+        pushHistory("assistant", stripTags(data.reply));
+        setChips(DEFAULT_CHIPS);
+        return;
+      }
+      throw new Error(data.error || "ai_unavailable");
+    } catch (e) {
+      // network down, no API key, or rate-limited — use the offline brain
+      hideTyping();
+      const res = brain(userText);
+      reply(res.texts, { chips: res.chips, actions: res.actions });
+      pushHistory("assistant", stripTags(res.texts[res.texts.length - 1]));
+    }
+  });
+}
+
 /* ---------- send flow ---------- */
 function send(text) {
   const val = String(text).trim();
   if (!val) return;
   addMsg(esc(val), "user");
+  pushHistory("user", val);
   mem.chats += 1;
   saveMemory();
   setChips([]);
-  const res = brain(val);
-  reply(res.texts, { chips: res.chips, actions: res.actions });
+
+  // Memory intents run locally & instantly; everything else goes to the AI.
+  const local = localBrain(val);
+  if (local) {
+    reply(local.texts, { chips: local.chips, actions: local.actions });
+    pushHistory("assistant", stripTags(local.texts[local.texts.length - 1]));
+    return;
+  }
+  askAI(val);
 }
 formEl.addEventListener("submit", (e) => {
   e.preventDefault();
