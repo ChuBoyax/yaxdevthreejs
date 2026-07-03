@@ -45,9 +45,9 @@ function timeAgo(ts) {
 }
 function timeGreet() {
   const h = new Date().getHours();
-  if (h < 12) return "Magandang umaga";
-  if (h < 18) return "Magandang hapon";
-  return "Magandang gabi";
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
 }
 
 /* =========================================================
@@ -221,14 +221,14 @@ function updateHeroGreet() {
   const h = new Date().getHours();
   const name = mem.name ? `, ${mem.name}` : "";
   let text;
-  if (h >= 5 && h < 12) text = `Magandang umaga${name}! ☀️`;
-  else if (h >= 12 && h < 18) text = `Magandang hapon${name}! 🌤️`;
-  else if (h >= 18) text = `Magandang gabi${name}! 🌙`;
-  else text = `Gising ka pa${name}? 🦉`; // 12am–5am — night-owl visitors
+  if (h >= 5 && h < 12) text = `Good morning${name}! ☀️`;
+  else if (h >= 12 && h < 18) text = `Good afternoon${name}! 🌤️`;
+  else if (h >= 18) text = `Good evening${name}! 🌙`;
+  else text = `Still up${name}? 🦉`; // 12am–5am — night-owl visitors
   heroGreetEl.textContent = text;
 }
 updateHeroGreet();
-setInterval(updateHeroGreet, 60000); // stays correct kung tumagal sila sa page
+setInterval(updateHeroGreet, 60000); // keeps it correct if they linger on the page
 
 /* ---------- messages ---------- */
 function addMsg(html, who, actions) {
@@ -339,36 +339,36 @@ const KB = {
   github: "https://github.com/ChuBoyax",
   linkedin: "https://www.linkedin.com/in/boyet-dedal-936484359/",
 };
-const DEFAULT_CHIPS = ["Projects", "Skills", "Contact", "Anong alam mo sa'kin?"];
+const DEFAULT_CHIPS = ["Projects", "Skills", "Contact", "What do you know about me?"];
 
 let awaitingName = !mem.name;
 
 function greet() {
   if (isReturning && mem.name) {
     const parts = [
-      `${timeGreet()}, <strong>${esc(mem.name)}</strong>! 👋 Welcome back — visit #${mem.visits} mo na 'to${prevVisitTs ? `, last time was ${timeAgo(prevVisitTs)}` : ""}.`,
+      `${timeGreet()}, <strong>${esc(mem.name)}</strong>! 👋 Welcome back — this is visit #${mem.visits}${prevVisitTs ? `, last time was ${timeAgo(prevVisitTs)}` : ""}.`,
     ];
     const fav = favoriteSection();
-    if (fav) parts.push(`Mukhang favorite mo ang <strong>${SECTION_LABELS[fav.id] || fav.id}</strong> section — you've opened it ${fav.count}× na. 😄`);
+    if (fav) parts.push(`Looks like <strong>${SECTION_LABELS[fav.id] || fav.id}</strong> is your favorite section — you've opened it ${fav.count}× already. 😄`);
     const unseen = unexploredSections();
     if (unseen.length) {
       parts.push(`You haven't explored <strong>${SECTION_LABELS[unseen[0]]}</strong> yet — want to take a look?`);
       reply(parts, { chips: DEFAULT_CHIPS, actions: [{ label: `Open ${SECTION_LABELS[unseen[0]]} ↗`, hash: unseen[0] }] });
     } else {
-      parts.push("You've seen every corner na ng portfolio. Solid. 🫡 Anything you want to ask about Boyet?");
+      parts.push("You've seen every corner of the portfolio. Solid. 🫡 Anything you want to ask about Boyet?");
       reply(parts, { chips: DEFAULT_CHIPS });
     }
     awaitingName = false;
   } else if (isReturning) {
     reply([
-      `Welcome back! 👋 Visit #${mem.visits} mo na 'to${prevVisitTs ? ` — last time was ${timeAgo(prevVisitTs)}` : ""}.`,
-      "I never got your name though. What should I call you? (I'll remember you next time — and Boyet gets to see na dumaan ka. 😊)",
+      `Welcome back! 👋 This is visit #${mem.visits}${prevVisitTs ? ` — last time was ${timeAgo(prevVisitTs)}` : ""}.`,
+      "I never got your name though. What should I call you? (I'll remember you next time — and Boyet gets to see that you stopped by. 😊)",
     ]);
     awaitingName = true;
   } else {
     reply([
-      "Hey! I'm <strong>Yax AI</strong> ✦ — Boyet's portfolio assistant. First time here, right? I remember my visitors, kaya next time kilala na kita. 😊",
-      "What should I call you? (Or just ask me anything — type “skip” kung ayaw mo.)",
+      "Hey! I'm <strong>Yax AI</strong> ✦ — Boyet's portfolio assistant. First time here, right? I remember my visitors, so next time I'll know you. 😊",
+      "What should I call you? (Or just ask me anything — type “skip” if you'd rather not.)",
     ]);
     awaitingName = true;
   }
@@ -378,7 +378,7 @@ function setName(name) {
   mem.name = name;
   saveMemory();
   setStatus();
-  updateHeroGreet(); // the homepage greeting turns personal agad
+  updateHeroGreet(); // the homepage greeting turns personal right away
   pingServer(false);
 }
 
@@ -407,7 +407,7 @@ function brain(raw) {
       setName(cap(candidate));
       return {
         texts: [
-          `Nice to meet you, <strong>${esc(mem.name)}</strong>! 🤝 Naka-save ka na sa memory ko — pagbalik mo dito, kilala na kita.`,
+          `Nice to meet you, <strong>${esc(mem.name)}</strong>! 🤝 You're saved in my memory now — when you come back, I'll recognize you.`,
           "So — what would you like to know? Boyet's projects, skills, experience, or how to contact him?",
         ],
         chips: DEFAULT_CHIPS,
@@ -424,17 +424,17 @@ function brain(raw) {
     setStatus();
     updateHeroGreet();
     awaitingName = true;
-    return { texts: ["Done — wiped my memory of you. 🧹 Parang first time na naman natin nagkita. What should I call you?"] };
+    return { texts: ["Done — wiped my memory of you. 🧹 It's like we're meeting for the first time again. What should I call you?"] };
   }
   const rename = raw.match(/(?:call me|my name is|ako si|ako'y|change my name to)\s+(.{2,40})$/i);
   if (rename && looksLikeName(rename[1].replace(/[.!]+$/, "").trim())) {
     setName(cap(rename[1].replace(/[.!]+$/, "").trim()));
-    return { texts: [`Got it, <strong>${esc(mem.name)}</strong>! Updated ang memory ko. ✍️`], chips: DEFAULT_CHIPS };
+    return { texts: [`Got it, <strong>${esc(mem.name)}</strong>! I've updated my memory. ✍️`], chips: DEFAULT_CHIPS };
   }
   if (/paano mo (na)?alam|how do you (know|remember)|creepy|stalk|privacy|tracking/i.test(q)) {
     return {
       texts: [
-        "Walang kababalaghan! 🙂 I only remember what happens dito mismo sa site — your name (kung sinabi mo), ilang beses ka na bumisita, at anong sections ang binuksan mo. Nakatago lahat sa browser mo.",
+        "Nothing spooky! 🙂 I only remember what happens right here on the site — your name (if you told me), how many times you've visited, and which sections you opened. It all stays in your browser.",
         "No GPS, no location tracking, no creepy scripts. Say “forget me” anytime and I drop everything I know about you.",
       ],
       chips: DEFAULT_CHIPS,
@@ -466,10 +466,10 @@ function brain(raw) {
     return { texts: ["I'm <strong>Yax AI</strong> ✦ — a memory-based assistant living in Boyet's portfolio. I recognize returning visitors, remember what you explored, and answer questions about his work."] };
   }
   if (/thank|salamat|thanks|ty\b/i.test(q)) {
-    return { texts: [`Walang anuman${mem.name ? `, ${esc(mem.name)}` : ""}! 🙌 Balik ka lang — I'll remember you.`] };
+    return { texts: [`You're welcome${mem.name ? `, ${esc(mem.name)}` : ""}! 🙌 Come back anytime — I'll remember you.`] };
   }
   if (/^(bye|goodbye|paalam|ingat|see you)/.test(q)) {
-    return { texts: [`Ingat${mem.name ? `, ${esc(mem.name)}` : ""}! 👋 See you on visit #${mem.visits + 1}.`] };
+    return { texts: [`Take care${mem.name ? `, ${esc(mem.name)}` : ""}! 👋 See you on visit #${mem.visits + 1}.`] };
   }
 
   /* — portfolio knowledge — */
@@ -532,20 +532,20 @@ function brain(raw) {
   }
   if (/testimonial|feedback|review/i.test(q)) {
     return {
-      texts: ["You can read what clients say about Boyet — or leave your own feedback — sa Testimonials section. Your name's already filled in my memory kung gusto mo mag-iwan. 😉"],
+      texts: ["You can read what clients say about Boyet — or leave your own feedback — in the Testimonials section. Your name's already saved in my memory if you'd like to leave one. 😉"],
       actions: [{ label: "Open Testimonials ↗", hash: "testimonials" }],
     };
   }
   if (/music|song|kanta|sound|tugtog/i.test(q)) {
-    return { texts: ["Nice catch — this site has a built-in lo-fi player! 🎧 Click the <strong>Sound</strong> button up top to pick a track (may Jamendo search pa). Perfect browsing music."] };
+    return { texts: ["Nice catch — this site has a built-in lo-fi player! 🎧 Click the <strong>Sound</strong> button up top to pick a track (there's even a Jamendo search). Perfect browsing music."] };
   }
   if (/dark|light|theme|mode/i.test(q)) {
     const cur = document.documentElement.dataset.theme || "light";
-    return { texts: [`You're on <strong>${cur} mode</strong> right now. Toggle the sun/moon switch sa taas to flip it — I'll remember your choice. ${cur === "light" ? "🌙" : "☀️"}`] };
+    return { texts: [`You're on <strong>${cur} mode</strong> right now. Toggle the sun/moon switch up top to flip it — I'll remember your choice. ${cur === "light" ? "🌙" : "☀️"}`] };
   }
   if (/tour|guide|where.*start|libot|ikot/i.test(q)) {
     return {
-      texts: ["Quick tour! 🗺 Start with <strong>About</strong> to meet Boyet, check <strong>Projects</strong> for his best work, then <strong>Contact</strong> kung gusto mo makipag-usap."],
+      texts: ["Quick tour! 🗺 Start with <strong>About</strong> to meet Boyet, check <strong>Projects</strong> for his best work, then <strong>Contact</strong> if you'd like to reach out."],
       actions: [
         { label: "About", hash: "about" },
         { label: "Projects", hash: "projects" },
@@ -560,7 +560,7 @@ function brain(raw) {
   /* — fallback — */
   return {
     texts: [
-      "Hmm, hindi ko sure yung sagot diyan. 😅 I'm best at questions about <strong>Boyet</strong> — try one of these:",
+      "Hmm, I'm not sure about that one. 😅 I'm best at questions about <strong>Boyet</strong> — try one of these:",
     ],
     chips: ["Projects", "Skills", "Experience", "Contact"],
   };

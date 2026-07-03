@@ -984,8 +984,12 @@ section { padding: clamp(4.5rem, 5vw, 5rem) clamp(1.5rem, 4vw, 4rem); scroll-mar
 
 .ai__panel {
   position: absolute; right: 0; bottom: 66px;
+  padding: 0; /* reset the global section{} padding — it's a <section> */
   width: min(360px, calc(100vw - 2rem));
-  height: min(520px, calc(100dvh - 8rem));
+  /* size to the content, only capping the height — so a short conversation
+     stays compact instead of leaving big empty gaps, and it grows (then
+     scrolls) as messages fill. The cap also keeps the top below the navbar. */
+  max-height: min(520px, calc(100dvh - 10.5rem));
   display: flex; flex-direction: column;
   background: var(--bg); border: 1px solid var(--line); border-radius: 18px;
   box-shadow: 0 24px 60px rgba(0, 0, 0, .25); overflow: hidden;
@@ -1018,12 +1022,16 @@ section { padding: clamp(4.5rem, 5vw, 5rem) clamp(1.5rem, 4vw, 4rem); scroll-mar
 .ai__close:hover { color: var(--ink); }
 
 .ai__msgs {
-  flex: 1; overflow-y: auto; padding: 1rem;
+  flex: 1; min-height: 0; overflow-y: auto; padding: 1rem;
   display: flex; flex-direction: column; gap: .55rem;
-  scrollbar-width: thin;
+  scrollbar-width: thin; scroll-padding-top: 1rem;
 }
+/* anchor messages to the bottom so few messages sit just above the input
+   (not floating under the header); when they overflow, the auto margin
+   collapses and normal scrolling takes over */
+.ai__msgs > :first-child { margin-top: auto; }
 .ai__msg {
-  max-width: 85%; padding: .6rem .85rem; border-radius: 14px;
+  max-width: 90%; padding: .6rem .85rem; border-radius: 14px;
   font-family: var(--sans); font-size: .86rem; line-height: 1.5; color: var(--ink);
   animation: aiMsgIn .35s var(--ease) both;
 }
@@ -1086,6 +1094,6 @@ section { padding: clamp(4.5rem, 5vw, 5rem) clamp(1.5rem, 4vw, 4rem); scroll-mar
 
 @media (max-width: 720px) {
   .ai { right: 1rem; bottom: 1rem; }
-  .ai__panel { bottom: 62px; height: min(480px, calc(100dvh - 7rem)); }
+  .ai__panel { bottom: 62px; max-height: min(480px, calc(100dvh - 9rem)); }
   .ai__teaser { font-size: .78rem; }
 }
