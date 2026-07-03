@@ -77,8 +77,13 @@ mem = loadMemory() || {
   lastVisit: null,     // timestamp of the PREVIOUS visit (for "3 days ago")
   sections: {},
   lastSection: null,
+  projects: {},        // { "LMBS": <ts they last looked at it> }
+  lastProject: null,   // the project that last caught their eye
   chats: 0,
 };
+// migrate older memory blobs that predate project tracking
+if (!mem.projects) mem.projects = {};
+if (!("lastProject" in mem)) mem.lastProject = null;
 
 // a "visit" = one browser session (refreshes don't double-count)
 let isNewSession = false;
@@ -116,6 +121,101 @@ const pageObserver = new MutationObserver(() => {
 document.querySelectorAll(".page").forEach((p) =>
   pageObserver.observe(p, { attributes: true, attributeFilter: ["class"] })
 );
+
+/* ---------- project catalog (read straight from the DOM) ----------
+   Name, type, year & link for every card — so the AI can talk specifics
+   ("LMBS — Web App, 2025") and resolve "this one" to a real project. */
+const PROJECTS = Array.from(document.querySelectorAll(".proj-card")).map((card) => {
+  const h = card.querySelector("h3");
+  const metas = card.querySelectorAll(".proj-card__meta span");
+  return {
+    name: h ? h.textContent.trim() : "",
+    type: metas[0] ? metas[0].textContent.trim() : "",
+    year: metas[1] ? metas[1].textContent.trim() : "",
+    url: card.getAttribute("href") || "",
+    updated: card.dataset.updated || "",
+  };
+}).filter((p) => p.name);
+const findProject = (name) => PROJECTS.find((p) => p.name === name) || null;
+
+/* ---------- project tracking (which work they looked at) ----------
+   A click (they opened it) or a lingering hover (they studied it) counts
+   as "looked at". We store the moment so that on a later visit we can say
+   "last time you checked X" — and flag it if X has an update since then.
+   focusProject is the live, this-session card they're pointing at right
+   now, so a question like "gaano katagal 'to?" resolves to the right one. */
+let focusProject = null;
+function noteProject(name) {
+  if (!name) return;
+  mem.projects[name] = Date.now();
+  mem.lastProject = name;
+  saveMemory();
+}
+document.querySelectorAll(".proj-card").forEach((card) => {
+  const titleEl = card.querySelector("h3");
+  const name = titleEl ? titleEl.textContent.trim() : null;
+  if (!name) return;
+  card.addEventListener("click", () => { focusProject = name; noteProject(name); });
+  let hoverTimer = null;
+  card.addEventListener("mouseenter", () => {
+    focusProject = name; // pointing at it = "this" for the next question
+    hoverTimer = setTimeout(() => noteProject(name), 1200); // a real look, not a passing glance
+  });
+  card.addEventListener("mouseleave", () => clearTimeout(hoverTimer));
+});
+
+/* What the visitor is looking at right now — sent to the AI so it can answer
+   "how long did THIS take?" without the visitor naming the project. */
+function currentContext() {
+  const activeEl = document.querySelector(".page.is-active");
+  const section = activeEl ? activeEl.id : (mem.lastSection || null);
+  const onProjects = section === "projects";
+  const proj = onProjects && focusProject ? findProject(focusProject) : null;
+  return {
+    section,
+    section_label: SECTION_LABELS[section] || section || null,
+    project: proj ? proj.name : null,
+    project_meta: proj,
+    projects: PROJECTS.map(({ name, type, year }) => ({ name, type, year })),
+  };
+}
+
+/* Info about the last project they looked at, and whether it has been
+   updated since — driven by each card's data-updated="YYYY-MM-DD". */
+function lastProjectInfo() {
+  const name = mem.lastProject;
+  if (!name) return null;
+  const viewedAt = mem.projects[name] || 0;
+  let hasUpdate = false;
+  let stillOnSite = false;
+  document.querySelectorAll(".proj-card").forEach((card) => {
+    const t = card.querySelector("h3");
+    if (!t || t.textContent.trim() !== name) return;
+    stillOnSite = true;
+    const upd = Date.parse(card.dataset.updated || "");
+    if (!isNaN(upd) && upd > viewedAt) hasUpdate = true;
+  });
+  if (!stillOnSite) return null; // project was renamed or removed — don't reference it
+  return { name, viewedAt, hasUpdate };
+}
+
+/* Dev helper: preview the returning-visitor moment without waiting days.
+   In the console run e.g.  yaxTestReturn("LMBS")  then it reloads pretending
+   you last saw that project 10 days ago, so any newer data-updated shows. */
+window.yaxTestReturn = function (projName) {
+  const first = document.querySelector(".proj-card h3");
+  const name = projName || mem.lastProject || (first ? first.textContent.trim() : null);
+  if (!name) return "No projects found.";
+  const tenDaysAgo = Date.now() - 10 * 24 * 60 * 60 * 1000;
+  mem.visits = Math.max(mem.visits, 2);
+  mem.projects[name] = tenDaysAgo;
+  mem.lastProject = name;
+  mem.lastVisit = tenDaysAgo; // makes it look like you were away ~10 days
+  saveMemory();
+  try { sessionStorage.removeItem(SESSION_FLAG); } catch (e) {}
+  location.reload();
+  return `Simulating a return visit — last looked at "${name}".`;
+};
 
 /* =========================================================
    2. Report the visit to the backend (owner sees it in
@@ -325,11 +425,26 @@ function hideTeaser() {
 }
 teaser.addEventListener("click", () => setPanel(true));
 
+// only resurface the "last time you looked at X" moment after a real gap
+// away (a few days feel), not on same-session or same-day revisits
+const RETURN_GAP_MS = 20 * 60 * 60 * 1000; // ~a day
+const awayLongEnough = prevVisitTs && (Date.now() - prevVisitTs) >= RETURN_GAP_MS;
+
 setTimeout(() => {
   if (panelOpen) return;
-  if (isReturning && mem.name) showTeaser(`Welcome back, ${mem.name}! ✦`);
-  else if (isReturning) showTeaser("Welcome back! I remember you ✦");
-  else showTeaser("Hi! First time here? — Yax AI ✦");
+  const who = mem.name ? `, ${mem.name}` : "";
+  const proj = isReturning && awayLongEnough ? lastProjectInfo() : null;
+  if (proj && proj.hasUpdate) {
+    showTeaser(`Welcome back${who}! Last time you checked ${proj.name} — there's an update on it ✦`);
+  } else if (proj) {
+    showTeaser(`Welcome back${who}! Last time, ${proj.name} caught your eye ✦`);
+  } else if (isReturning && mem.name) {
+    showTeaser(`Welcome back, ${mem.name}! ✦`);
+  } else if (isReturning) {
+    showTeaser("Welcome back! I remember you ✦");
+  } else {
+    showTeaser("Hi! First time here? — Yax AI ✦");
+  }
 }, 2600);
 
 /* =========================================================
@@ -384,7 +499,7 @@ function localBrain(raw) {
   /* — forget me — */
   if (/forget me|forget everything|kalimutan mo ako|kalimti ko|delete my (data|memory)|clear memory|burahin/i.test(q)) {
     try { localStorage.removeItem(MEM_KEY); sessionStorage.removeItem(SESSION_FLAG); } catch (e) {}
-    mem = { key: uuid(), name: null, visits: 1, firstVisit: Date.now(), lastVisit: Date.now(), sections: {}, lastSection: null, chats: 0 };
+    mem = { key: uuid(), name: null, visits: 1, firstVisit: Date.now(), lastVisit: Date.now(), sections: {}, lastSection: null, projects: {}, lastProject: null, chats: 0 };
     saveMemory();
     setStatus();
     updateHeroGreet();
@@ -429,15 +544,23 @@ function greet() {
     const parts = [
       `${timeGreet()}, <strong>${esc(mem.name)}</strong>! 👋 Welcome back — this is visit #${mem.visits}${prevVisitTs ? `, last time was ${timeAgo(prevVisitTs)}` : ""}.`,
     ];
+    const proj = lastProjectInfo();
+    if (proj && proj.hasUpdate) {
+      parts.push(`Last time you were checking out <strong>${esc(proj.name)}</strong> — good news, it's had an update since then. 👀`);
+    } else if (proj) {
+      parts.push(`Last time, <strong>${esc(proj.name)}</strong> caught your eye — want another look?`);
+    }
     const fav = favoriteSection();
     if (fav) parts.push(`Looks like <strong>${SECTION_LABELS[fav.id] || fav.id}</strong> is your favorite section — you've opened it ${fav.count}× already. 😄`);
+    // if we know a project they cared about, steer them straight to Projects
+    const projAction = proj ? [{ label: "Open Projects ↗", hash: "projects" }] : null;
     const unseen = unexploredSections();
     if (unseen.length) {
       parts.push(`You haven't explored <strong>${SECTION_LABELS[unseen[0]]}</strong> yet — want to take a look?`);
-      reply(parts, { chips: DEFAULT_CHIPS, actions: [{ label: `Open ${SECTION_LABELS[unseen[0]]} ↗`, hash: unseen[0] }] });
+      reply(parts, { chips: DEFAULT_CHIPS, actions: projAction || [{ label: `Open ${SECTION_LABELS[unseen[0]]} ↗`, hash: unseen[0] }] });
     } else {
       parts.push("You've seen every corner of the portfolio. Solid. 🫡 Anything you want to ask about Boyet?");
-      reply(parts, { chips: DEFAULT_CHIPS });
+      reply(parts, { chips: DEFAULT_CHIPS, actions: projAction || undefined });
     }
     awaitingName = false;
   } else if (isReturning) {
@@ -497,10 +620,33 @@ function brain(raw) {
     awaitingName = false; // fall through and answer normally
   }
 
+  /* — context-aware: resolve "this / ito / 'to" to the project in view — */
+  const focused = focusProject ? findProject(focusProject) : null;
+  const saysThis = /\b(this|these|it|ito|'to|nito|niya|nyan|nyang|yan|ganito|dito)\b/i.test(raw);
+  if (focused && (saysThis || document.querySelector(".page.is-active")?.id === "projects")) {
+    const p = focused;
+    const visit = `<a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer">visit ${esc(p.name)} ↗</a>`;
+    if (/how long|katagal|gaano.*tagal|tagal|duration|build time|matagal|kailan.*(gawa|tapos)/i.test(q)) {
+      return { texts: [`You're looking at <strong>${esc(p.name)}</strong> (${esc(p.type)}, ${esc(p.year)}). I don't have the exact build time on hand — Boyet can share the specifics if you email him. 🙂 In the meantime you can ${visit}.`], chips: ["Projects", "Contact"] };
+    }
+    if (/what.*(this|it)\b|^what('?s| is) this|ano.*(ito|'to|to\b)|about this|tell me about (this|it)|anong (ito|proyekto)/i.test(q)) {
+      return { texts: [`That's <strong>${esc(p.name)}</strong> — a ${esc(p.type)} from ${esc(p.year)}. You can ${visit} to see it live.`], chips: ["How long did it take?", "Tech used", "Projects"] };
+    }
+    if (/tech|stack|built with|gamit|technolog|paano.*(gawa|ginawa)|framework|language/i.test(q)) {
+      return { texts: [`<strong>${esc(p.name)}</strong> was built with Boyet's usual full-stack toolkit — Laravel, Filament, Tailwind CSS & MySQL, with JavaScript on the front end. Want to ${visit}?`], chips: ["Projects", "Skills", "Contact"] };
+    }
+    if (/link|url|open|visit|see|tingnan|buksan|website|live/i.test(q)) {
+      return { texts: [`Sure — ${visit}. It's <strong>${esc(p.name)}</strong>, a ${esc(p.type)} (${esc(p.year)}).`], chips: ["Projects", "Contact"] };
+    }
+    if (/when|year|kailan|anong taon/i.test(q)) {
+      return { texts: [`<strong>${esc(p.name)}</strong> is from <strong>${esc(p.year)}</strong> (${esc(p.type)}).`], chips: ["Projects", "Contact"] };
+    }
+  }
+
   /* — memory commands — */
   if (/forget me|forget everything|kalimutan mo ako|delete my (data|memory)|clear memory|burahin/i.test(q)) {
     try { localStorage.removeItem(MEM_KEY); sessionStorage.removeItem(SESSION_FLAG); } catch (e) {}
-    mem = { key: uuid(), name: null, visits: 1, firstVisit: Date.now(), lastVisit: Date.now(), sections: {}, lastSection: null, chats: 0 };
+    mem = { key: uuid(), name: null, visits: 1, firstVisit: Date.now(), lastVisit: Date.now(), sections: {}, lastSection: null, projects: {}, lastProject: null, chats: 0 };
     saveMemory();
     setStatus();
     updateHeroGreet();
@@ -659,6 +805,7 @@ function askAI(userText) {
         body: JSON.stringify({
           messages: history.slice(-MAX_HISTORY),
           visitor: { name: mem.name, visits: mem.visits, last_section: mem.lastSection },
+          context: currentContext(),
         }),
       });
       const data = await res.json().catch(() => ({}));
