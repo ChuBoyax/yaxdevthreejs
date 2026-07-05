@@ -10,14 +10,20 @@
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
   <script>document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";</script>
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/vampire.css" />
 </head>
 <body>
   <canvas id="bg"></canvas>
+  <!-- rises over the night side only (css/vampire.css) -->
+  <img class="vamp-moon" src="images/buwan.webp" alt="" aria-hidden="true" loading="lazy" />
   <div class="loader" id="loader">
     <div class="loader__count"><span id="loaderNum">0</span><i>%</i></div>
     <div class="loader__bar"><span id="loaderBar"></span></div>
   </div>
-  <div class="cursor" id="cursor"></div>
+  <div class="cursor" id="cursor">
+    <img class="cursor__logo cursor__logo--dark" src="images/logo/yaxdevlogo.png" alt="" aria-hidden="true" />
+    <img class="cursor__logo cursor__logo--light" src="images/logo/yaxdevlogoblack.png" alt="" aria-hidden="true" />
+  </div>
   <div class="hint" id="hint">
     <span class="hint__dot"></span>
     <span>Move to paint — sound on ✦</span>
@@ -89,6 +95,7 @@
     <section class="hero page" id="home">
       <div class="hero__inner">
         <p class="hero__greet reveal" id="heroGreet" aria-live="polite"></p>
+        <p class="vamp-greet">You've arrived after dark. I've been expecting you. 🦇</p>
         <h1 class="hero__title">
           <span class="line"><span class="reveal-y">I'm <em>Boyet A. Dedal</em></span></span>
           <span class="line"><span class="reveal-y">I build scalable, full-stack web applications</span></span>
@@ -137,7 +144,8 @@
       </div>
       <div class="studio__grid">
         <figure class="studio__portrait" aria-hidden="true">
-          <img src="images/upuan.png" alt="" loading="lazy" />
+          <img class="vamp-hide-img" src="images/upuan.png" alt="" loading="lazy" />
+          <img class="vamp-show-img" src="images/vampiresuit.webp" alt="" loading="lazy" />
         </figure>
         <div class="studio__main">
           <p class="studio__lead reveal-y">
@@ -455,7 +463,7 @@
     <section class="contact page" id="contact">
       <h2 class="contact__title">
         <span class="line"><span class="reveal-y">Let's build</span></span>
-        <span class="line"><span class="reveal-y"><em>something</em> good.</span></span>
+        <span class="line"><span class="reveal-y"><span class="vamp-hide"><em>something</em> good.</span><span class="vamp-only"><em>something</em> immortal.</span></span></span>
       </h2>
       <a class="contact__mail" href="mailto:dedalboyet16@gmail.com" data-cursor>dedalboyet16@gmail.com</a>
       <div class="contact__socials">
@@ -497,6 +505,7 @@
   <script src="js/vendor/jspdf.umd.min.js"></script>
   <script type="module" src="js/main.js"></script>
   <script type="module" src="js/ai.js"></script>
+  <script src="js/vampire.js" defer></script>
   <script src="js/console-egg.js"></script>
 </body>
 </html>

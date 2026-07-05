@@ -96,9 +96,27 @@ section.page.is-active {
               background .35s var(--ease), opacity .3s;
   mix-blend-mode: difference;
 }
+/* on hover the dot morphs into the YAX DEV logo */
+.cursor__logo {
+  position: absolute; top: 50%; left: 50%;
+  width: 100%; height: 100%; object-fit: contain;
+  transform: translate(-50%, -50%) scale(.4);
+  opacity: 0; display: none;
+  transition: opacity .3s var(--ease), transform .35s var(--ease);
+  pointer-events: none;
+}
+html[data-theme="dark"] .cursor__logo--light { display: none !important; }
+html[data-theme="dark"] .cursor__logo--dark { display: block; }
+html[data-theme="light"] .cursor__logo--dark { display: none !important; }
+html[data-theme="light"] .cursor__logo--light { display: block; }
 .cursor.is-hover {
-  width: 56px; height: 56px;
-  background: #fff;
+  width: 64px; height: 64px;
+  background: transparent;
+  mix-blend-mode: normal; /* show the logo's true colors, not inverted */
+}
+.cursor.is-hover .cursor__logo {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
 }
 @media (hover: none) { .cursor { display: none; } body { cursor: auto; } }
 
@@ -544,11 +562,42 @@ section { padding: clamp(4.5rem, 5vw, 5rem) clamp(1.5rem, 4vw, 4rem); scroll-mar
   background: linear-gradient(to top, rgba(0,0,0,.82) 0%, rgba(0,0,0,.25) 42%, rgba(0,0,0,0) 68%);
   opacity: 1; transition: opacity .5s var(--ease);
 }
-/* the Uiverse-style border that rotates into place on hover */
+/* the fire border that rotates into place on hover — a spinning
+   flame-colored ring with a blurred, flickering glow around it */
+@property --fire-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: true;
+}
 .proj-card__border {
+  --fire-angle: 0deg;
   position: absolute; inset: 0; z-index: 2; pointer-events: none;
-  border: 2px solid var(--accent); border-radius: inherit;
+  border-radius: inherit;
   opacity: 0; transform: rotate(8deg); transition: all .5s var(--ease);
+}
+.proj-card__border::before,
+.proj-card__border::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  padding: 3px;
+  background: conic-gradient(from var(--fire-angle),
+    #ff3d00, #ff9100, #ffd166, #ff6b1a, #ff3d00 40%,
+    #ffb347 55%, #ff3d00 70%, #ffd166 85%, #ff3d00);
+  /* mask keeps only the ring, so the screenshot stays visible inside */
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask-composite: exclude;
+  animation: fire-spin 2.6s linear infinite;
+}
+.proj-card__border::after {
+  filter: blur(9px);
+  animation: fire-spin 2.6s linear infinite, fire-flicker 1.1s ease-in-out infinite;
+}
+@keyframes fire-spin { to { --fire-angle: 360deg; } }
+@keyframes fire-flicker {
+  0%, 100% { opacity: .85; }
+  35%      { opacity: .55; }
+  60%      { opacity: 1; }
 }
 .proj-card__info {
   position: absolute; inset: auto 0 0 0; z-index: 3;
@@ -568,6 +617,7 @@ section { padding: clamp(4.5rem, 5vw, 5rem) clamp(1.5rem, 4vw, 4rem); scroll-mar
 .proj-card:hover .proj-card__info { opacity: 0; }
 @media (prefers-reduced-motion: reduce) {
   .proj-card, .proj-card__media img, .proj-card__border { transition: none; }
+  .proj-card__border::before, .proj-card__border::after { animation: none; }
 }
 
 /* ---------- Studio ---------- */

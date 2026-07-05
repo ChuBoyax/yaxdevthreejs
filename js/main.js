@@ -557,6 +557,7 @@ const LOCAL_TRACKS = [
   { name: "Smooth", url: "music/pulsebox-lofi-smooth-522876.mp3" },
   { name: "The Mountain", url: "music/the_mountain-lofi-513863.mp3" },
   { name: "Mountain Lo-fi", url: "music/the_mountain-lofi-lofi-music-496553.mp3" },
+  { name: "Vampire Night 🦇", url: "music/horrorsound.mp3" },
 ];
 let onlineTracks = [];                       // filled from Jamendo (default lo-fi or search results)
 let TRACKS = LOCAL_TRACKS.slice();           // local + online combined (rebuilt as online changes)
@@ -589,7 +590,9 @@ function initAudio() {
   musicGain = actx.createGain(); musicGain.gain.value = 0.0001;
   musicFilter.connect(musicGain); musicGain.connect(master);
 
-  audioEl = new Audio(MUSIC_URL);
+  // currentUrl (not MUSIC_URL) so a track picked before init — e.g. vampire
+  // mode swapping in its own music at load — is what actually starts playing
+  audioEl = new Audio(currentUrl);
   audioEl.loop = true;
   audioEl.preload = "auto";
   audioEl.crossOrigin = "anonymous"; // needed so external (Jamendo) audio works through Web Audio
@@ -698,6 +701,22 @@ function setTrack(url) {
   else if (audioEl) audioEl.play().catch(() => {});
   updateSoundMenu();
 }
+
+/* tiny bridge so vampire mode (js/vampire.js) can swap the music.
+   Unlike setTrack, swap() never force-unmutes: a muted visitor stays
+   muted — the new track simply becomes what plays when they unmute. */
+window.yaxMusic = {
+  current: () => currentUrl,
+  swap(url) {
+    if (!url) return;
+    currentUrl = url;
+    if (audioEl) {
+      if (audioEl.src.indexOf(url) === -1) { audioEl.src = url; audioEl.load(); }
+      if (soundOn) audioEl.play().catch(() => {});
+    }
+    updateSoundMenu();
+  },
+};
 
 let soundSearchEl = null, soundListEl = null, soundSearchTimer = null;
 
