@@ -633,7 +633,7 @@ function brain(raw) {
       return { texts: [`That's <strong>${esc(p.name)}</strong> — a ${esc(p.type)} from ${esc(p.year)}. You can ${visit} to see it live.`], chips: ["How long did it take?", "Tech used", "Projects"] };
     }
     if (/tech|stack|built with|gamit|technolog|paano.*(gawa|ginawa)|framework|language/i.test(q)) {
-      return { texts: [`<strong>${esc(p.name)}</strong> was built with Boyet's usual full-stack toolkit — Laravel, Filament, Tailwind CSS & MySQL, with JavaScript on the front end. Want to ${visit}?`], chips: ["Projects", "Skills", "Contact"] };
+      return { texts: [`<strong>${esc(p.name)}</strong> was built with Boyet's usual toolkit — Laravel, Filament, Tailwind CSS & MySQL, with JavaScript on the front end. Want to ${visit}?`], chips: ["Projects", "Skills", "Contact"] };
     }
     if (/link|url|open|visit|see|tingnan|buksan|website|live/i.test(q)) {
       return { texts: [`Sure — ${visit}. It's <strong>${esc(p.name)}</strong>, a ${esc(p.type)} (${esc(p.year)}).`], chips: ["Projects", "Contact"] };
@@ -703,8 +703,8 @@ function brain(raw) {
   if (/who.*(boyet|owner|made|built|gumawa)|about (boyet|him|the dev)|sino si/i.test(q)) {
     return {
       texts: [
-        "<strong>Boyet A. Dedal</strong> — a Full-Stack Developer from Hindang, Leyte, Philippines 🇵🇭 (GMT+8). He builds scalable web applications with clean code and great UX, and he's currently <strong>open to freelance work</strong>.",
-        "He works at the crossroads of design and code — detail-obsessed, performance-minded, and currently exploring shaders (this ink background? his doing 🎨).",
+        "<strong>Boyet A. Dedal</strong> — a Web &amp; Software Developer and fresh graduate from Hindang, Leyte, Philippines 🇵🇭 (GMT+8). He builds web and software applications with great UX, and he's currently <strong>open to work</strong>.",
+        "He likes keeping his work simple, clean, and easy to use, and he's always happy to learn new things. He's also open to different kinds of work, not just web development. 🙂",
       ],
       actions: [{ label: "Open About ↗", hash: "about" }],
       chips: ["Skills", "Projects", "Contact"],
@@ -731,7 +731,7 @@ function brain(raw) {
   if (/experience|job|trabaho|career|working|employ/i.test(q)) {
     return {
       texts: [
-        "Boyet has been a <strong>Web Developer at Creative Dev Labs</strong> since October 2024 — building and maintaining full-stack web apps, managing MySQL databases, QA testing, and shipping system upgrades. 💼",
+        "Boyet has been a <strong>Web Developer at Creative Dev Labs</strong> since October 2024 — building and maintaining web apps and systems, managing MySQL databases, QA testing, and shipping system upgrades. He also built the MLGCL &amp; HNVS ID systems and mentored students in a programming subject. 💼",
       ],
       actions: [{ label: "Open Experience ↗", hash: "experience" }],
       chips: ["Projects", "Skills", "Contact"],

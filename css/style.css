@@ -672,6 +672,7 @@ section { padding: clamp(4.5rem, 5vw, 5rem) clamp(1.5rem, 4vw, 4rem); scroll-mar
 }
 .resume__name { font-family: var(--serif); font-weight: 400; font-size: clamp(1.8rem, 4vw, 2.6rem); line-height: 1; }
 .resume__role { font-family: var(--sans); font-size: .8rem; text-transform: uppercase; letter-spacing: .22em; color: var(--accent); margin-top: .5rem; }
+.resume__badge { display: inline-block; margin-top: .55rem; padding: .28rem .7rem; font-family: var(--sans); font-size: .68rem; text-transform: uppercase; letter-spacing: .16em; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; }
 .resume__contact { list-style: none; text-align: right; }
 .resume__contact li { font-size: .82rem; color: var(--muted); line-height: 1.65; }
 @media (max-width: 560px) { .resume__contact { text-align: left; } }

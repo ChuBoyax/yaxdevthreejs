@@ -908,7 +908,7 @@ function buildResumePDF() {
   const qa = (sel, root = document) => [...root.querySelectorAll(sel)];
 
   const name = q(".resume__name")?.textContent.trim() || "Boyet A. Dedal";
-  const role = q(".resume__role")?.textContent.trim() || "Full-Stack Developer";
+  const role = q(".resume__role")?.textContent.trim() || "Web & Software Developer";
   const contacts = qa(".resume__contact li").map((li) => li.textContent.trim());
 
   // Profile photo (top-left of the header). Loaded async below; null until ready.
@@ -926,8 +926,8 @@ function buildResumePDF() {
     // ---- header (photo top-left, name + role beside it, contacts right) ----
     let headX = M;            // x where the name/role text starts
     let photoBottom = y;
+    const ph = 80 * S;        // photo height (also the header height when a photo is shown)
     if (photoData) {
-      const ph = 80 * S;
       const pw = ph * photoAspect;
       if (draw) doc.addImage(photoData, "JPEG", M, y, pw, ph);
       headX = M + pw + 16 * S;
@@ -938,8 +938,13 @@ function buildResumePDF() {
     t(name, headX, y + (photoData ? 34 : 4) * S);
     doc.setFont("helvetica", "normal"); doc.setFontSize(9.5 * S); doc.setTextColor(...MUTED);
     t(role.toUpperCase(), headX, y + (photoData ? 51 : 21) * S, { charSpace: 1.5 });
-    contacts.forEach((c, i) => t(c, RIGHT, y + 4 * S + i * 12.5 * S, { align: "right" }));
-    const textBottom = y + Math.max((photoData ? 56 : 30) * S, 4 * S + contacts.length * 12.5 * S);
+    // Contacts: vertically centred against the photo so they sit level with the name.
+    const cLH = 12.5 * S;
+    const cStartY = photoData
+      ? y + ph / 2 - ((contacts.length - 1) * cLH) / 2 + 4 * S
+      : y + 4 * S;
+    contacts.forEach((c, i) => t(c, RIGHT, cStartY + i * cLH, { align: "right" }));
+    const textBottom = y + Math.max((photoData ? 56 : 30) * S, 4 * S + contacts.length * cLH);
     y = Math.max(photoBottom, textBottom);
     doc.setDrawColor(210, 205, 196); doc.setLineWidth(0.6); line(M, y, RIGHT, y);
     y += 18 * S;
@@ -953,13 +958,16 @@ function buildResumePDF() {
       y += 15 * S;
     };
     const paragraph = (txt) => {
-      const lines = doc.splitTextToSize(txt, RIGHT - M);
+      // Set the font BEFORE measuring so splitTextToSize wraps at the real render
+      // size — otherwise it measures at the previous (smaller) heading size and
+      // the printed lines overrun the label rule.
       doc.setFont("helvetica", "normal"); doc.setFontSize(10 * S); doc.setTextColor(...INK);
+      const lines = doc.splitTextToSize(txt, RIGHT - M);
       t(lines, M, y); y += lines.length * LH + 7 * S;
     };
     const bullet = (txt) => {
-      const lines = doc.splitTextToSize(txt, RIGHT - M - 13 * S);
       doc.setFont("helvetica", "normal"); doc.setFontSize(10 * S); doc.setTextColor(...INK);
+      const lines = doc.splitTextToSize(txt, RIGHT - M - 13 * S);
       t("•", M, y);
       t(lines, M + 13 * S, y); y += lines.length * LH + 3 * S;
     };
