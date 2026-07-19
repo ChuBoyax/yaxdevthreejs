@@ -1057,11 +1057,12 @@ function buildResumePDF() {
 const resumeBtn = document.getElementById("resumeBtn");
 const resumeGate = document.getElementById("resumeGate");
 if (resumeBtn && resumeGate) {
+  // Production goes through the portfolio's own domain (see vercel.json rewrites).
   const RESUME_API_BASE = (
     location.hostname.endsWith(".test") ||
     location.hostname === "localhost" ||
     location.hostname === "127.0.0.1"
-  ) ? "http://testimonials-api.test/api" : "https://testimonials-kappa-sable.vercel.app/api";
+  ) ? "http://testimonials-api.test/api" : "/api";
   const RESUME_VERIFY_API = `${RESUME_API_BASE}/resume/verify`;
 
   const gateForm = document.getElementById("gateForm");
@@ -1134,11 +1135,10 @@ if (resumeBtn && resumeGate) {
 // so testing locally always hits the latest code (you can see new fields like the
 // social badge immediately, instead of an old frozen production deployment).
 const TM_LOCAL_API = "http://testimonials-api.test/api/testimonials";
-// Use the STABLE production alias (auto-points to the latest production deploy),
-// NOT a per-deployment hash URL — hash URLs freeze to one build (so new backend
-// features like the social badge silently disappear) and are gated behind Vercel
-// SSO. This alias is public and always current.
-const TM_PROD_API = "https://testimonials-kappa-sable.vercel.app/api/testimonials";
+// Production calls the portfolio's OWN domain and Vercel proxies to the backend
+// (vercel.json rewrites) — same-origin, so CORS and the Vercel Security
+// Checkpoint can never block it.
+const TM_PROD_API = "/api/testimonials";
 const TESTIMONIAL_API = (
   location.hostname.endsWith(".test") ||
   location.hostname === "localhost" ||

@@ -8,11 +8,14 @@
    so the owner can see who visited (Filament → Visitors).
    ========================================================= */
 
+// In production the API is reached through the portfolio's OWN domain ("/api")
+// and Vercel proxies it to the backend (see vercel.json rewrites). Same-origin
+// requests can't be blocked by CORS or the Vercel Security Checkpoint.
 const AI_API_BASE = (
   location.hostname.endsWith(".test") ||
   location.hostname === "localhost" ||
   location.hostname === "127.0.0.1"
-) ? "http://testimonials-api.test/api" : "https://testimonials-kappa-sable.vercel.app/api";
+) ? "http://testimonials-api.test/api" : "/api";
 const TRACK_API = `${AI_API_BASE}/visitors/track`;
 const CHAT_API = `${AI_API_BASE}/yax/chat`;
 

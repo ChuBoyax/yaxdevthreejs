@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Yax Dev</title>
   <meta name="description" content="Independent studio crafting brand, digital & motion experiences with code." />
+  <link rel="icon" type="image/png" href="images/logo/yaxdevlogo.png" />
+  <link rel="apple-touch-icon" href="images/logo/yaxdevlogo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
@@ -81,6 +83,7 @@
       <a href="#projects" data-cursor><span class="menu__idx"></span>Projects</a>
       <a href="#experience" data-cursor><span class="menu__idx"></span>Experience</a>
       <a href="#testimonials" data-cursor><span class="menu__idx"></span>Testimonials</a>
+      <a href="#blog" data-cursor><span class="menu__idx"></span>Blog</a>
       <a href="#contact" data-cursor><span class="menu__idx"></span>Contact</a>
     </nav>
     <div class="menu__foot">
@@ -97,7 +100,7 @@
         <p class="hero__greet reveal" id="heroGreet" aria-live="polite"></p>
         <p class="vamp-greet">You've arrived after dark. I've been expecting you. 🦇</p>
         <h1 class="hero__title">
-          <span class="line"><span class="reveal-y">I'm <em>Boyet A. Dedal</em></span></span>
+          <span class="line"><span class="reveal-y">I am <em>Boyet A. Dedal</em></span></span>
           <span class="line"><span class="reveal-y">I build web &amp; software applications</span></span>
           <span class="line"><span class="reveal-y">with <em>great UX.</em></span></span>
         </h1>
@@ -490,6 +493,164 @@
         </form>
       </div>
     </section>
+    <section class="blog page" id="blog">
+      <div class="section-head">
+        <h2 class="reveal-y">Blog</h2>
+        <p class="blog__tag reveal">Simple stories from a developer in Leyte — about code, work, and learning.</p>
+      </div>
+      <div class="blog__list">
+        <article class="blog__item reveal">
+          <button class="blog__link" type="button" data-post="post-portal" data-cursor>
+            <span class="blog__num">01</span>
+            <span class="blog__meta">
+              <span class="blog__cat">Case Study</span>
+              <time class="blog__date" datetime="2026-06-14">Jun 2026</time>
+              <span class="blog__read">6 min read</span>
+            </span>
+            <span class="blog__body">
+              <span class="blog__title">Building a School Portal as a Fresh Graduate</span>
+              <span class="blog__excerpt">What I learned about real users and real deadlines while building the HNVS school portal.</span>
+            </span>
+            <span class="blog__media" aria-hidden="true">
+              <img src="images/hnvs.png" alt="" loading="lazy" />
+              <span class="blog__media-arrow">→</span>
+            </span>
+          </button>
+        </article>
+        <article class="blog__item reveal">
+          <button class="blog__link" type="button" data-post="post-stack" data-cursor>
+            <span class="blog__num">02</span>
+            <span class="blog__meta">
+              <span class="blog__cat">Engineering</span>
+              <time class="blog__date" datetime="2026-04-02">Apr 2026</time>
+              <span class="blog__read">5 min read</span>
+            </span>
+            <span class="blog__body">
+              <span class="blog__title">Why I Use Laravel + Filament</span>
+              <span class="blog__excerpt">Admin panels used to take so much of my time. These two tools changed that for me.</span>
+            </span>
+            <span class="blog__media" aria-hidden="true">
+              <img src="images/lmbs.png" alt="" loading="lazy" />
+              <span class="blog__media-arrow">→</span>
+            </span>
+          </button>
+        </article>
+        <article class="blog__item reveal">
+          <button class="blog__link" type="button" data-post="post-ids" data-cursor>
+            <span class="blog__num">03</span>
+            <span class="blog__meta">
+              <span class="blog__cat">Field Notes</span>
+              <time class="blog__date" datetime="2025-11-20">Nov 2025</time>
+              <span class="blog__read">4 min read</span>
+            </span>
+            <span class="blog__body">
+              <span class="blog__title">Printing 1,000 Student IDs with Our Own App</span>
+              <span class="blog__excerpt">We brought our ID Maker app to a real school — long lines, printer problems, and all.</span>
+            </span>
+            <span class="blog__media" aria-hidden="true">
+              <img src="images/mlgidmaker.png" alt="" loading="lazy" />
+              <span class="blog__media-arrow">→</span>
+            </span>
+          </button>
+        </article>
+        <article class="blog__item reveal">
+          <button class="blog__link" type="button" data-post="post-mentor" data-cursor>
+            <span class="blog__num">04</span>
+            <span class="blog__meta">
+              <span class="blog__cat">Reflections</span>
+              <time class="blog__date" datetime="2025-08-08">Aug 2025</time>
+              <span class="blog__read">4 min read</span>
+            </span>
+            <span class="blog__body">
+              <span class="blog__title">Teaching Code While Still Learning It</span>
+              <span class="blog__excerpt">My teacher asked me to help teach other students. I was not ready — but I said yes.</span>
+            </span>
+            <span class="blog__media" aria-hidden="true">
+              <img src="images/library.png" alt="" loading="lazy" />
+              <span class="blog__media-arrow">→</span>
+            </span>
+          </button>
+        </article>
+      </div>
+
+      <template id="post-portal">
+        <span data-cat>Case Study</span>
+        <span data-date>June 14, 2026</span>
+        <span data-read>6 min read</span>
+        <h1 data-title>Building a School Portal as a Fresh Graduate</h1>
+        <div data-content>
+          <p>When Creative Dev Labs gave me the HNVS portal project, I was still new. I was excited, but honestly, I was also scared. The school needed enrollment, reports, and student IDs — all in one system. Real staff would use it every day.</p>
+          <p>Here is what this project taught me. These are things I never learned in school.</p>
+          <h3>Watch how people use your app</h3>
+          <p>I thought my first enrollment form was good. Clean design, nice labels. Then I watched the school registrar use it. She did not read my labels at all. She just typed fast, the same way she did with the old paper form. When my form order was different from the paper, she got confused.</p>
+          <p>So I changed my form to follow the same order as their paper form. After that, no more complaints. The lesson: <em>do not force people to change how they work. Follow their way first.</em></p>
+          <blockquote>My best lesson came from standing behind the registrar and just watching her work.</blockquote>
+          <h3>Reports are very important</h3>
+          <p>At first, I thought reports were a "later" feature. I was wrong. For the school, reports are the main point. The principal needs enrollment numbers. DepEd asks for reports on exact dates. So I learned to treat reports as a main feature, not an extra.</p>
+          <h3>Deadlines are real</h3>
+          <p>A school app cannot be late. Enrollment starts on a fixed date, and the system must be ready. This taught me to keep things simple. A small system that works on day one is better than a big system that is one week late.</p>
+          <h3>My advice to other fresh grads</h3>
+          <p>Take the project that scares you a little. Sit beside your users and watch them. Follow how they already work. And keep your plan small enough that you can finish it on time.</p>
+        </div>
+      </template>
+
+      <template id="post-stack">
+        <span data-cat>Engineering</span>
+        <span data-date>April 2, 2026</span>
+        <span data-read>5 min read</span>
+        <h1 data-title>Why I Use Laravel + Filament</h1>
+        <div data-content>
+          <p>Every system I have made — booking apps, school portals, library systems — needs an admin panel. The client uses it every day. But building it takes a lot of time. Before, it took almost half of my project time.</p>
+          <p>Laravel and Filament changed that for me.</p>
+          <h3>What Laravel gives me</h3>
+          <p>Laravel already solves many common problems: database, forms, login, and more. I do not need to build these from zero every time. And the best part: every Laravel project looks the same inside. When I open an old project, I know where everything is. That saves me a lot of time.</p>
+          <h3>What Filament adds</h3>
+          <p>Filament can turn a database table into a full admin page — with forms, search, and filters — in minutes, not days. Before, one admin page took me a week. Now it takes one afternoon, and it already looks clean and professional. For client work here in the Philippines, where time and budget are small, this speed is a big help.</p>
+          <blockquote>Before, I did not like building admin panels. Now, it is the first thing I show to clients.</blockquote>
+          <h3>The hard parts</h3>
+          <p>To be honest, Filament is not perfect. If you want a very custom design, it can be hard to change. Big version updates also need care. For public pages that visitors see, I still build my own design. Filament is best for the admin side only.</p>
+          <h3>My simple rule</h3>
+          <p>Use fast and easy tools for the admin side. Then spend your saved time on the pages that visitors really see. For me, that means Laravel and Filament.</p>
+        </div>
+      </template>
+
+      <template id="post-ids">
+        <span data-cat>Field Notes</span>
+        <span data-date>November 20, 2025</span>
+        <span data-read>4 min read</span>
+        <h1 data-title>Printing 1,000 Student IDs with Our Own App</h1>
+        <div data-content>
+          <p>Most of my work happens on a computer screen. But this project happened in a school hallway — with tables, a camera, ID cards, and a very long line of students.</p>
+          <p>We built the MLGC ID Maker as a web app. Take a photo, type the student's details, and print the ID. Then we brought it to the school for the college students and HNVS Grade 11. I learned that using your app in real life is very different from testing it in the office.</p>
+          <h3>Speed matters a lot</h3>
+          <p>In the office, two seconds feels fast. But with four hundred students waiting in line, every second counts. So we made the steps very short: photo, confirm, next. Every click we removed made the line move faster.</p>
+          <h3>Machines will fail — be ready</h3>
+          <p>Printers jam. Cameras disconnect. Someone unplugs a cable by accident. Our app had to survive all of these without losing our work. Taking photos of thirty students again is not an option. So we made sure the app saves everything, even if the page refreshes.</p>
+          <blockquote>An error on the screen is a small problem. A long line of waiting students is a big problem.</blockquote>
+          <h3>The happy ending</h3>
+          <p>In the end, we could take photos and print IDs faster than the line could move. Students got their finished ID right away — no "come back next week." Seeing our app work in real life, in front of real people, was the best feeling I've had as a developer.</p>
+          <p>If you ever get the chance to use your own app in the real world, take it. It is the fastest way to make your app better.</p>
+        </div>
+      </template>
+
+      <template id="post-mentor">
+        <span data-cat>Reflections</span>
+        <span data-date>August 8, 2025</span>
+        <span data-read>4 min read</span>
+        <h1 data-title>Teaching Code While Still Learning It</h1>
+        <div data-content>
+          <p>In college, my programming teacher asked me to help teach his third-year students. My first thought was: <em>but I am still learning too!</em> I said yes anyway. And it became one of the best things I did as a student.</p>
+          <h3>Teaching helps you learn</h3>
+          <p>You think you understand loops — until you try to explain them to someone else. When I taught a lesson, I had to find simple words for it. And many times, while looking for those simple words, I found out I did not fully understand it myself. Teaching showed me my own weak spots.</p>
+          <h3>Most problems are confidence problems</h3>
+          <p>The students' errors were usually small: a missing semicolon, a wrong variable name. The real problem was different. Many of them believed that being stuck meant they were not good at coding. My real job was to show them that being stuck is normal. Every developer gets stuck. The good ones just keep going.</p>
+          <blockquote>I fixed small errors, but my real job was to show them that being stuck is normal.</blockquote>
+          <h3>Every student is different</h3>
+          <p>One explanation works for one student but confuses another. One student needs a drawing. Another needs an example. Another just needs to type the code three times. I learned to change how I explain, depending on the person. I still use this skill today — with clients and teammates.</p>
+          <p>If someone asks you to teach, say yes — even if you feel not ready. You will never feel ready first. Teaching is what makes you ready.</p>
+        </div>
+      </template>
+    </section>
     <section class="contact page" id="contact">
       <h2 class="contact__title">
         <span class="line"><span class="reveal-y">Let's build</span></span>
@@ -507,6 +668,33 @@
       </footer>
     </section>
   </main>
+  <!-- Blog reader — full-screen article overlay -->
+  <div class="reader" id="reader" aria-hidden="true">
+    <div class="reader__backdrop" data-reader-close></div>
+    <div class="reader__panel" role="dialog" aria-modal="true" aria-labelledby="readerTitle">
+      <span class="reader__progress" id="readerProgress" aria-hidden="true"></span>
+      <button class="reader__close" id="readerClose" type="button" data-cursor aria-label="Close article">×</button>
+      <div class="reader__scroll" id="readerScroll">
+        <article class="reader__article">
+          <header class="reader__head">
+            <p class="reader__meta">
+              <span id="readerCat"></span>
+              <span class="reader__dot">·</span>
+              <span id="readerDate"></span>
+              <span class="reader__dot">·</span>
+              <span id="readerRead"></span>
+            </p>
+            <h1 class="reader__title" id="readerTitle"></h1>
+          </header>
+          <div class="reader__content" id="readerContent"></div>
+          <footer class="reader__foot">
+            <span class="reader__sign">— Boyet A. Dedal · Yax Dev</span>
+            <button class="reader__back" type="button" data-reader-close data-cursor>Back to blog ↩</button>
+          </footer>
+        </article>
+      </div>
+    </div>
+  </div>
   <!-- Résumé download gate — owner-only -->
   <div class="gate" id="resumeGate" aria-hidden="true">
     <div class="gate__backdrop" data-gate-close></div>
@@ -534,6 +722,7 @@
   </script>
   <script src="js/vendor/jspdf.umd.min.js"></script>
   <script type="module" src="js/main.js"></script>
+  <script type="module" src="js/blog.js"></script>
   <script type="module" src="js/ai.js"></script>
   <script src="js/vampire.js" defer></script>
   <script src="js/console-egg.js"></script>
