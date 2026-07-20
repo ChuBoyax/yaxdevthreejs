@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import * as THREE from "./vendor/three.module.js";
 
 /* =========================================================
    REAL-TIME FLUID SIMULATION  (Unseen.co–style ink)
