@@ -4,8 +4,20 @@
   "outputDirectory": ".",
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://testimonials-kappa-sable.vercel.app/api/:path*"
+      "source": "/api/testimonials",
+      "destination": "https://testimonials-kappa-sable.vercel.app/api/testimonials"
+    },
+    {
+      "source": "/api/resume/verify",
+      "destination": "https://testimonials-kappa-sable.vercel.app/api/resume/verify"
+    },
+    {
+      "source": "/api/visitors/track",
+      "destination": "https://testimonials-kappa-sable.vercel.app/api/visitors/track"
+    },
+    {
+      "source": "/api/yax/chat",
+      "destination": "https://testimonials-kappa-sable.vercel.app/api/yax/chat"
     }
   ],
   "headers": [
@@ -14,7 +26,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:; media-src 'self' https://*.jamendo.com; connect-src 'self' https://api.jamendo.com https://*.jamendo.com https://*.vercel.app; form-action 'self'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; upgrade-insecure-requests"
+          "value": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; script-src 'self' 'sha256-RvdErzb6t5B7SlBsfl9pFZJYswRjazqeBahp+edimWY='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:; media-src 'self' https://*.jamendo.com; connect-src 'self' https://api.jamendo.com https://*.jamendo.com; form-action 'self'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; upgrade-insecure-requests"
         },
         {
           "key": "X-Frame-Options",
@@ -38,6 +50,10 @@
         },
         {
           "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin"
+        },
+        {
+          "key": "Cross-Origin-Resource-Policy",
           "value": "same-origin"
         },
         {

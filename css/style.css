@@ -776,6 +776,8 @@ section { padding: clamp(4.5rem, 5vw, 5rem) clamp(1.5rem, 4vw, 4rem); scroll-mar
   transition: border-color .25s var(--ease), background .25s var(--ease);
 }
 .tm__input::placeholder { color: var(--muted); }
+/* honeypot field — visually gone but still in the DOM for bots to fill */
+.tm__hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .tm__input:focus { border-color: var(--accent); background: rgba(127, 127, 127, .16); }
 .tm__textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
 .tm__rate-row { display: flex; align-items: center; gap: 1rem; }

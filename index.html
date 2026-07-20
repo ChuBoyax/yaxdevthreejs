@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-  <script>document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";</script>
+  <script src="js/theme-init.js"></script>
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/vampire.css" />
 </head>
@@ -473,6 +473,8 @@
             <input class="tm__input" type="text" name="role" placeholder="Role / Company (optional)" maxlength="80" />
           </div>
           <input class="tm__input" type="url" name="social" placeholder="Facebook / Instagram / LinkedIn / TikTok link" maxlength="255" inputmode="url" autocomplete="url" required />
+          <!-- honeypot — humans never see or fill this; bots do -->
+          <input class="tm__hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
           <div class="tm__rate-row">
             <span class="tm__rate-label">Rating</span>
             <div class="tm__rate" id="tmRate" role="radiogroup" aria-label="Rating">
@@ -716,7 +718,7 @@
   <script type="importmap">
   {
     "imports": {
-      "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+      "three": "./js/vendor/three.module.js"
     }
   }
   </script>

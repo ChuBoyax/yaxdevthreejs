@@ -1253,7 +1253,7 @@ const TESTIMONIAL_API = (
       const res = await fetch(TESTIMONIAL_API, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Accept": "application/json" },
-        body: JSON.stringify({ name, role, social, rating, message }),
+        body: JSON.stringify({ name, role, social, rating, message, website: form.website.value }),
       });
       if (!res.ok) throw new Error("Request failed");
       form.reset(); rating = 5; ratingInput.value = 5; paint(5);
