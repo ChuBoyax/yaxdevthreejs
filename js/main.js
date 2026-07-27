@@ -12,6 +12,7 @@ const plxItems = [...document.querySelectorAll("[data-plx]")];
 const pinnedArts = [...document.querySelectorAll("[data-art]")]
   .map((el) => ({ el, section: document.getElementById(el.dataset.art) }))
   .filter((a) => a.section);
+const contactSection = document.getElementById("contact");
 let plxScroll = window.scrollY || 0;
 let plxMX = 0, plxMY = 0, plxTX = 0, plxTY = 0;
 
@@ -35,14 +36,75 @@ window.addEventListener("pointermove", (e) => {
   });
   // crossfade each pinned backdrop by how much of the viewport its section covers
   const vh = window.innerHeight || 1;
+  const overlapOf = (sec) => {
+    const r = sec.getBoundingClientRect();
+    return Math.max(0, Math.min(r.bottom, vh) - Math.max(r.top, 0)) / vh;
+  };
+  const contactOv = contactSection ? Math.min(1, overlapOf(contactSection) * 1.35) : 0;
   pinnedArts.forEach(({ el, section }) => {
-    const r = section.getBoundingClientRect();
-    const overlap = Math.max(0, Math.min(r.bottom, vh) - Math.max(r.top, 0)) / vh;
-    const o = Math.min(1, overlap * 1.35);
+    let o = Math.min(1, overlapOf(section) * 1.35);
+    // the HOME photo lingers faintly behind the middle sections (About…Blog)
+    // so the background stays "medj kita", then clears out for Contact's own
+    if (el.dataset.art === "home") o = Math.max(o, 0.2 * (1 - contactOv));
     el.style.opacity = o.toFixed(3);
     el.style.visibility = o <= 0.01 ? "hidden" : "visible";
   });
   requestAnimationFrame(plxLoop);
+})();
+
+/* homepage background — professional crossfade slideshow.
+   Add more images by dropping <img class="hero__slide"> into the
+   .hero__art--slideshow figure; this cycles through whatever is there. */
+(function heroSlideshows() {
+  // Each .hero__art--slideshow figure (home + contact) runs its own cycle.
+  document.querySelectorAll(".hero__art--slideshow").forEach((figure) => {
+    const slides = [...figure.querySelectorAll(".hero__slide")];
+    if (slides.length < 2) return;
+    const HOLD = 6000; // ms each image stays before sliding to the next
+    let i = 0, timer = null, raf = 0;
+
+    function advance() {
+      const cur = slides[i];
+      i = (i + 1) % slides.length;
+      const nxt = slides[i];
+      // instantly park the incoming slide off-screen right (no visible sweep)
+      nxt.classList.add("no-anim");
+      nxt.classList.remove("is-active", "is-out");
+      void nxt.offsetWidth;            // flush the reset before re-enabling motion
+      nxt.classList.remove("no-anim");
+      // then move: current exits left, next enters from the right
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        cur.classList.remove("is-active");
+        cur.classList.add("is-out");
+        nxt.classList.add("is-active");
+      });
+    }
+
+    function start() { stop(); timer = setInterval(advance, HOLD); }
+    function stop() { clearInterval(timer); timer = null; cancelAnimationFrame(raf); }
+
+    // Snap to a clean single-active state — repairs any half-finished
+    // transition left behind when the tab was backgrounded (rAF is frozen
+    // while hidden, which used to strand every slide off-screen → black).
+    function repair() {
+      slides.forEach((s, n) => {
+        s.classList.add("no-anim");
+        s.classList.toggle("is-active", n === i);
+        s.classList.remove("is-out");
+      });
+      void slides[0].offsetWidth;
+      slides.forEach((s) => s.classList.remove("no-anim"));
+    }
+
+    slides[0].classList.add("is-active");
+    start();
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) { stop(); }
+      else { repair(); start(); }
+    });
+  });
 })();
 
 /* =========================================================
@@ -51,13 +113,21 @@ window.addEventListener("pointermove", (e) => {
 const loader = document.getElementById("loader");
 const loaderNum = document.getElementById("loaderNum");
 const loaderBar = document.getElementById("loaderBar");
-let progress = 0;
-const tick = setInterval(() => {
-  progress += Math.random() * 18;
-  if (progress >= 100) { progress = 100; clearInterval(tick); finish(); }
-  loaderNum.textContent = Math.floor(progress);
-  loaderBar.style.width = progress + "%";
-}, 130);
+// Smooth count-up: the target jumps in chunks, but the shown value eases
+// toward it every frame — so the number and bar glide instead of snapping.
+let shown = 0, target = 0;
+const bump = setInterval(() => {
+  target = Math.min(100, target + 14 + Math.random() * 20);
+  if (target >= 100) clearInterval(bump);
+}, 200);
+(function countUp() {
+  shown += (target - shown) * 0.09;
+  if (target >= 100 && shown > 99.4) shown = 100;
+  loaderNum.textContent = Math.round(shown);
+  loaderBar.style.width = shown.toFixed(1) + "%";
+  if (shown >= 100) { finish(); return; }
+  requestAnimationFrame(countUp);
+})();
 function finish() {
   setTimeout(() => {
     loader.classList.add("is-done");
@@ -66,6 +136,7 @@ function finish() {
     if (target?.classList.contains("page") && fromHash !== "home") {
       target.scrollIntoView({ behavior: "instant", block: "start" });
     }
+    cleanUrl(); // drop any # from the URL (e.g. an old bookmarked #about)
     initPageObservers();
   }, 350);
 }
@@ -74,6 +145,7 @@ function finish() {
    5. Continuous scroll — reveal-on-scroll + current-section tracking
    ========================================================= */
 const pages = [...document.querySelectorAll("section.page")];
+const navLinks = [...document.querySelectorAll(".nav__links a")];
 
 function initPageObservers() {
   // reveal each section's content the first time it scrolls into view
@@ -90,26 +162,34 @@ function initPageObservers() {
     entries.forEach((en) => {
       if (!en.isIntersecting) return;
       pages.forEach((p) => p.classList.toggle("is-active", p === en.target));
-      if (location.hash !== "#" + en.target.id) {
-        history.replaceState(null, "", "#" + en.target.id);
-      }
+      // underline the header link for the section currently in view
+      navLinks.forEach((a) =>
+        a.classList.toggle("is-current", a.getAttribute("href") === "#" + en.target.id)
+      );
+      // (URL is kept clean — no #hash is written while scrolling)
     });
   }, { rootMargin: "-45% 0px -45% 0px" });
   pages.forEach((p) => activeObs.observe(p));
+}
+
+// strip any #hash from the address bar without reloading or jumping
+function cleanUrl() {
+  if (location.hash) history.replaceState(null, "", location.pathname + location.search);
 }
 
 function scrollToPage(id) {
   const target = document.getElementById(id);
   if (!target || !target.classList.contains("page")) return false;
   target.scrollIntoView({ behavior: "smooth", block: "start" });
-  if (location.hash !== "#" + id) history.replaceState(null, "", "#" + id);
+  cleanUrl(); // keep the URL clean — no #home, #about, …
   return true;
 }
 
-// external hash changes (e.g. the Yax AI widget setting location.hash)
+// external hash changes (e.g. the Yax AI widget setting location.hash) still
+// navigate, but we immediately wipe the # back out of the address bar
 window.addEventListener("hashchange", () => {
   const id = location.hash.slice(1);
-  if (id) scrollToPage(id);
+  if (id) scrollToPage(id); else cleanUrl();
 });
 
 /* =========================================================

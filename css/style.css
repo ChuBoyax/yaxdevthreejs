@@ -70,20 +70,6 @@ em { font-style: italic; }
   animation-delay: -11s;
 }
 @keyframes blobBreathe { from { scale: 1; } to { scale: 1.22; } }
-/* thin editorial ring that slowly spins while parallaxing */
-.bgfx__ring {
-  position: absolute; top: 8%; right: 6%;
-  width: 58vmin; height: 58vmin; border-radius: 50%;
-  border: 1px solid var(--line);
-  will-change: transform;
-  animation: ringSpin 60s linear infinite;
-}
-.bgfx__ring::after {
-  content: ""; position: absolute; top: -5px; left: 50%;
-  width: 9px; height: 9px; border-radius: 50%; background: var(--accent);
-  opacity: .55;
-}
-@keyframes ringSpin { to { rotate: 360deg; } }
 /* film grain over everything, very faint */
 .bgfx__grain {
   position: absolute; inset: -50%;
@@ -104,7 +90,7 @@ html[data-theme="dark"] .bgfx__blob--2 { background: radial-gradient(circle at 6
 html[data-theme="dark"] .bgfx__blob--3 { background: radial-gradient(circle at 50% 50%, #a06b8a2e, transparent 70%); }
 html[data-theme="dark"] .bgfx__grain { mix-blend-mode: screen; opacity: .06; }
 @media (prefers-reduced-motion: reduce) {
-  .bgfx__blob, .bgfx__ring, .bgfx__grain { animation: none; }
+  .bgfx__blob, .bgfx__grain { animation: none; }
 }
 
 html { scroll-behavior: smooth; }
@@ -147,7 +133,7 @@ section.page {
   width: clamp(180px, 38vw, 420px); height: 2px; background: var(--line);
   border-radius: 2px; overflow: hidden;
 }
-.loader__bar span { display: block; height: 100%; width: 0; background: var(--ink); transition: width .25s var(--ease); }
+.loader__bar span { display: block; height: 100%; width: 0; background: var(--ink); transition: width .12s linear; }
 
 /* ---------- Nav — floating glass bar ---------- */
 .nav {
@@ -180,7 +166,10 @@ html[data-theme="light"] .nav__brand-logo--light { display: block; }
   content: ""; position: absolute; left: 0; bottom: -4px; width: 0; height: 1px;
   background: currentColor; transition: width .4s var(--ease);
 }
-.nav__links a:hover::after { width: 100%; }
+.nav__links a:hover::after,
+.nav__links a.is-current::after { width: 100%; }
+/* current section's link stays lit even without hover */
+.nav__links a.is-current { color: var(--accent); }
 .nav__right { display: flex; align-items: center; gap: 1.5rem; }
 
 /* theme toggle */
@@ -443,6 +432,17 @@ section { padding: clamp(4.5rem, 5vw, 5rem) clamp(1.5rem, 4vw, 4rem); scroll-mar
   width: 100%; height: 100%; object-fit: cover; object-position: center;
   animation: heroDrift 24s ease-in-out infinite alternate;
 }
+/* slideshow — the next image slides in from the right like "next",
+   the current one pushes out to the left. Clean directional move, no fade. */
+.hero__art--slideshow .hero__slide {
+  position: absolute; inset: 0; animation: none;
+  transform: translateX(100%);          /* parked off to the right by default */
+  transition: transform 1.1s cubic-bezier(.62, 0, .2, 1);
+  will-change: transform;
+}
+.hero__art--slideshow .hero__slide.is-active { transform: translateX(0); }
+.hero__art--slideshow .hero__slide.is-out { transform: translateX(-100%); }
+.hero__art--slideshow .hero__slide.no-anim { transition: none; }
 /* readability overlays — cream wash from the left + soft top/bottom fades */
 .hero__art::after {
   content: ""; position: absolute; inset: 0;
@@ -565,6 +565,21 @@ section { padding: clamp(4.5rem, 5vw, 5rem) clamp(1.5rem, 4vw, 4rem); scroll-mar
 .proj-card__num { font-size: .72rem; letter-spacing: .12em; opacity: .65; }
 .proj-card__info h3 { font-family: var(--serif); font-weight: 400; font-size: clamp(1.3rem, 2vw, 1.7rem); line-height: 1.1; }
 .proj-card__meta { display: flex; justify-content: space-between; font-size: .74rem; text-transform: uppercase; letter-spacing: .08em; opacity: .8; }
+
+/* "Best in Capstone" award badge — gold pill, top-left of a featured card */
+.proj-card__award {
+  position: absolute; top: .8rem; left: .8rem; z-index: 4;
+  display: inline-flex; align-items: center; gap: .35rem;
+  padding: .38rem .7rem; border-radius: 100px;
+  background: linear-gradient(135deg, #f7e3a1 0%, #e7c79a 45%, #c9a24b 100%);
+  color: #2a1e05; font-family: var(--sans); font-weight: 500;
+  font-size: .64rem; text-transform: uppercase; letter-spacing: .1em;
+  box-shadow: 0 4px 16px rgba(201, 162, 75, .45);
+  pointer-events: none;
+}
+.proj-card__award svg { width: 12px; height: 12px; }
+/* keep the badge visible even on hover (the info block fades, this stays) */
+.proj-card:hover .proj-card__award { opacity: 1; }
 
 .proj-card:hover { transform: scale(1.045); border-radius: 4px; box-shadow: 0 22px 55px rgba(0,0,0,.45); }
 .proj-card:hover .proj-card__media img { transform: scale(1.08); filter: saturate(1.05); }

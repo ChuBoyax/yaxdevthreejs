@@ -19,7 +19,6 @@
     <span class="bgfx__blob bgfx__blob--1" data-speed="-0.10" data-depth="26"></span>
     <span class="bgfx__blob bgfx__blob--2" data-speed="-0.20" data-depth="42"></span>
     <span class="bgfx__blob bgfx__blob--3" data-speed="-0.06" data-depth="16"></span>
-    <span class="bgfx__ring" data-speed="-0.28" data-depth="30"></span>
     <span class="bgfx__grain"></span>
   </div>
   <div class="loader" id="loader">
@@ -79,8 +78,11 @@
           <p class="reveal">Web &amp; mobile developer based in the Philippines. I like building useful web and mobile applications, working with data, and helping with different tasks. I'm always happy to learn new things. Currently open to new opportunities.</p>
         </div>
       </div>
-      <figure class="hero__art" data-art="home" aria-hidden="true">
-        <img src="images/programmer.png" alt="" loading="eager" />
+      <figure class="hero__art hero__art--slideshow" data-art="home" aria-hidden="true">
+        <img class="hero__slide is-active" src="images/programmer.png" alt="" loading="eager" />
+        <img class="hero__slide" src="images/anyangle.png" alt="" loading="eager" />
+        <img class="hero__slide" src="images/itopa.png" alt="" loading="eager" />
+        <img class="hero__slide" src="images/highangle.png" alt="" loading="eager" />
       </figure>
       <section class="marquee" aria-hidden="true">
         <div class="marquee__track">
@@ -287,10 +289,14 @@
         <a class="proj-card reveal" href="https://lmbs-staging.creativedevlabs.com/" target="_blank" rel="noopener" data-cursor data-updated="2026-06-30">
           <div class="proj-card__media"><img src="images/lmbs.png" alt="LMBS" loading="lazy" /></div>
           <span class="proj-card__border"></span>
+          <span class="proj-card__award">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a5 5 0 0 0-5 5c0 1.9 1.06 3.55 2.62 4.4L8 22l4-2 4 2-1.62-10.6A5 5 0 0 0 17 7a5 5 0 0 0-5-5z"/></svg>
+            Best in Capstone
+          </span>
           <div class="proj-card__info">
             <span class="proj-card__num">01</span>
             <h3>LMBS</h3>
-            <div class="proj-card__meta"><span>Web App</span><span>2025</span></div>
+            <div class="proj-card__meta"><span>Capstone · Web App</span><span>2025</span></div>
           </div>
         </a>
         <a class="proj-card reveal" href="https://lts-pb.creativedevlabs.com/admin/login" target="_blank" rel="noopener" data-cursor data-updated="2026-06-20">
@@ -624,8 +630,11 @@
       </template>
     </section>
     <section class="contact page" id="contact">
-      <figure class="hero__art hero__art--contact" data-art="contact" aria-hidden="true">
-        <img src="images/programmer.png" alt="" loading="lazy" />
+      <figure class="hero__art hero__art--contact hero__art--slideshow" data-art="contact" aria-hidden="true">
+        <img class="hero__slide is-active" src="images/programmer.png" alt="" loading="lazy" />
+        <img class="hero__slide" src="images/anyangle.png" alt="" loading="lazy" />
+        <img class="hero__slide" src="images/itopa.png" alt="" loading="lazy" />
+        <img class="hero__slide" src="images/highangle.png" alt="" loading="lazy" />
       </figure>
       <h2 class="contact__title">
         <span class="line"><span class="reveal-y">Let's build</span></span>
